@@ -110,6 +110,31 @@ All configuration is stored in `data/` as EDN files:
 
 ## Important Implementation Details
 
+### Functional Programming Style
+
+This codebase follows functional programming principles:
+
+- **Separation of concerns**: Data processing is separated from side effects
+  - `process-feed` is pure (no side effects) - it only transforms data
+  - `run-once` performs side effects (printing, checkpointing) after all data is collected
+- **Avoid mutation**: Use `map`, `mapcat`, and `reduce` instead of `doseq` with atoms
+- **Immutable data structures**: Results are built up using lazy sequences and vector transformations
+
+When adding new features, maintain this separation:
+```clojure
+;; Good - pure function returns data
+(defn process-feed [feed]
+  {:alerts [...] :items [...]})
+
+;; Then perform side effects separately
+(doseq [result results]
+  (println result))
+
+;; Bad - mixing mutation and side effects
+(doseq [feed feeds]
+  (swap! state conj (process feed)))
+```
+
 ### Type Hints and Reflection
 
 This codebase uses Java interop extensively for feed parsing and date operations. **Always add proper type hints** to avoid reflection warnings:

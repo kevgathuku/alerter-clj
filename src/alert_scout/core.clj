@@ -69,6 +69,23 @@
            "\n"))))
 
 ;; --- Fetch, match, emit alerts, update checkpoint ---
+(defn process-feed
+  "Process a single feed and return its results without side effects."
+  [{:keys [feed-id url]}]
+  (let [last-seen (storage/last-seen feed-id)
+        items (->> (fetcher/fetch-items feed-id url)
+                   (filter #(when-let [ts (:published-at %)]
+                              (or (nil? last-seen) (.after ^Date ts last-seen))))
+                   (sort-by :published-at))
+        alerts (mapcat #(matcher/match-item rules-by-user %) items)
+        latest-item (last items)]
+    {:feed-id feed-id
+     :url url
+     :items items
+     :alerts alerts
+     :latest-item latest-item
+     :item-count (count items)}))
+
 (defn run-once
   "Process feeds for new items and emit alerts.
    If no feeds provided, uses the feeds loaded from data/feeds.edn.
@@ -76,27 +93,25 @@
   ([]
    (run-once feeds))
   ([feeds]
-   (let [all-alerts (atom [])
-         items-processed (atom 0)]
-     (doseq [{:keys [feed-id url]} feeds]
+   ;; Process all feeds functionally (no mutation)
+   (let [         results (map process-feed feeds)
+         ;; Aggregate results
+         all-alerts (mapcat :alerts results)
+         total-items (reduce + 0 (map :item-count results))]
+
+     ;; Perform side effects after data processing
+     (doseq [{:keys [feed-id url alerts latest-item]} results]
        (println (colorize :gray (str "\n→ Checking feed: " feed-id " (" url ")")))
-       (let [last-seen (storage/last-seen feed-id)
-             items (->> (fetcher/fetch-items feed-id url)
-                        (filter #(when-let [ts (:published-at %)]
-                                   (or (nil? last-seen) (.after ^Date ts last-seen))))
-                        (sort-by :published-at))]
-         (swap! items-processed + (count items))
-         (doseq [item items]
-           (let [alerts (matcher/match-item rules-by-user item)]
-             (swap! all-alerts concat alerts)
-             (doseq [alert alerts]
-               (emit-alert alert))))
-         (when-let [latest (last items)]
-           (storage/update-checkpoint! feed-id (:published-at latest) "data/checkpoints.edn"))))
-     (println (format-summary @all-alerts))
-     (println (colorize :gray (str "Processed " @items-processed " new items across " (count feeds) " feeds\n")))
-     {:alerts @all-alerts
-      :items-processed @items-processed})))
+       (doseq [alert alerts]
+         (emit-alert alert))
+       (when latest-item
+         (storage/update-checkpoint! feed-id (:published-at latest-item) "data/checkpoints.edn")))
+
+     (println (format-summary all-alerts))
+     (println (colorize :gray (str "Processed " total-items " new items across " (count feeds) " feeds\n")))
+
+     {:alerts (vec all-alerts)
+      :items-processed total-items})))
 
 
 ;; --- Export functions ---
