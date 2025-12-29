@@ -32,6 +32,34 @@
   (save-checkpoints! path))
 
 
+;; --- Configuration loading with validation ---
+
+(defn load-users
+  "Load users from an EDN file. Returns a vector of user maps.
+   Validates users against schema and throws on invalid data."
+  [path]
+  (let [users (or (load-edn path) [])]
+    (try
+      (schemas/validate-users users)
+      (catch Exception e
+        (throw (ex-info (str "Invalid users in " path)
+                        {:path path
+                         :errors (:errors (ex-data e))}
+                        e))))))
+
+(defn load-rules
+  "Load rules from an EDN file. Returns a vector of rule maps.
+   Validates rules against schema and throws on invalid data."
+  [path]
+  (let [rules (or (load-edn path) [])]
+    (try
+      (schemas/validate-rules rules)
+      (catch Exception e
+        (throw (ex-info (str "Invalid rules in " path)
+                        {:path path
+                         :errors (:errors (ex-data e))}
+                        e))))))
+
 ;; --- Feed management ---
 
 (defn load-feeds

@@ -6,9 +6,11 @@
   (:import (java.util Date)))
 
 
-;; --- Load users / rules / feeds / checkpoints ---
-(def users (storage/load-edn "data/users.edn"))
-(def rules (storage/load-edn "data/rules.edn"))
+;; --- Load and validate configuration on startup ---
+;; All config is validated against schemas. If any validation fails,
+;; the namespace will fail to load with clear error messages.
+(def users (storage/load-users "data/users.edn"))
+(def rules (storage/load-rules "data/rules.edn"))
 (def feeds (storage/load-feeds "data/feeds.edn"))
 (storage/load-checkpoints! "data/checkpoints.edn")
 
