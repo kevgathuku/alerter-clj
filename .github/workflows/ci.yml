@@ -23,7 +23,17 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
         distribution: 'temurin'
-        cache: 'leiningen'
+
+    - name: Cache Leiningen dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.lein
+          target
+        key: ${{ runner.os }}-lein-${{ hashFiles('project.clj') }}
+        restore-keys: |
+          ${{ runner.os }}-lein-
 
     - name: Install Leiningen
       run: |
@@ -57,7 +67,17 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'leiningen'
+
+    - name: Cache Leiningen dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.lein
+          target
+        key: ${{ runner.os }}-lein-${{ hashFiles('project.clj') }}
+        restore-keys: |
+          ${{ runner.os }}-lein-
 
     - name: Install Leiningen
       run: |
@@ -90,7 +110,17 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: 'leiningen'
+
+    - name: Cache Leiningen dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.lein
+          target
+        key: ${{ runner.os }}-lein-${{ hashFiles('project.clj') }}
+        restore-keys: |
+          ${{ runner.os }}-lein-
 
     - name: Install Leiningen
       run: |

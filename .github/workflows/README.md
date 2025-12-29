@@ -75,9 +75,22 @@ The CI workflow produces a JAR file that can be downloaded:
 ## Caching
 
 Both workflows cache Leiningen dependencies to speed up builds:
-- Cache key: Based on `project.clj`
+- Caches: `~/.m2/repository` (Maven repo), `~/.lein` (Leiningen config), `target` (build artifacts)
+- Cache key: Based on `project.clj` hash
 - Automatically invalidated when dependencies change
 - Reduces build time from ~2-3 minutes to ~30 seconds
+
+The cache configuration:
+```yaml
+- name: Cache Leiningen dependencies
+  uses: actions/cache@v4
+  with:
+    path: |
+      ~/.m2/repository
+      ~/.lein
+      target
+    key: ${{ runner.os }}-lein-${{ hashFiles('project.clj') }}
+```
 
 ## Troubleshooting
 

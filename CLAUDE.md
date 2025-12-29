@@ -80,9 +80,10 @@ The project uses GitHub Actions for CI/CD with two workflows:
 - Runs tests and compilation checks
 
 Both workflows:
-- Cache Leiningen dependencies for faster builds
+- Cache Leiningen dependencies (`~/.m2`, `~/.lein`, `target`) for faster builds
 - Fail if reflection warnings are detected
 - Validate data schemas during tests
+- Cache key based on `project.clj` hash
 
 ## Architecture
 
