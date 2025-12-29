@@ -1,7 +1,7 @@
 # Alert Scout
 
 ![CI](https://github.com/kevgathuku/alerter-clj/workflows/CI/badge.svg)
-![Quick Check](https://github.com/YOUR_USERNAME/my-stuff/workflows/Quick%20Check/badge.svg)
+![Quick Check](https://github.com/kevgathuku/alerter-clj/workflows/Quick%20Check/badge.svg)
 
 **Alert Scout** is an intelligent RSS/Atom feed monitoring system that watches your favorite feeds and sends you personalized alerts based on powerful rule-matching logic.
 
