@@ -5,7 +5,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 ## Development Setup
 
 1. **Prerequisites:**
-   - JDK 11, 17, or 21
+   - JDK 21 or 25
    - [Leiningen](https://leiningen.org/) installed
 
 2. **Clone and setup:**
@@ -131,7 +131,7 @@ Write minimal tests focused on business logic:
 4. **Wait for CI checks:**
    - All tests must pass
    - No reflection warnings
-   - Builds on JDK 11, 17, and 21
+   - Builds on JDK 21 and 25
 
 5. **Address review feedback**
 

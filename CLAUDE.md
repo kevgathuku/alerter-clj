@@ -67,7 +67,7 @@ The project uses GitHub Actions for CI/CD with two workflows:
 
 **Main CI Pipeline** (`.github/workflows/ci.yml`):
 - Runs on push to main/master branches and pull requests
-- Tests against multiple JDK versions (11, 17, 21)
+- Tests against multiple JDK versions (21, 25)
 - Runs all tests
 - Checks for reflection warnings
 - Builds uberjar artifact

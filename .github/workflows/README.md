@@ -13,7 +13,7 @@ This directory contains CI/CD workflows for the Alert Scout project.
 **Jobs:**
 
 1. **Test** - Runs tests on multiple JDK versions
-   - JDK 11, 17, and 21
+   - JDK 21 and 25
    - Ensures compatibility across Java versions
    - Runs `lein test`
    - Checks for reflection warnings
@@ -112,7 +112,7 @@ Check the JDK version:
 # See which Java version you're using
 java -version
 
-# CI tests on JDK 11, 17, and 21
+# CI tests on JDK 21 and 25
 # Ensure your code is compatible
 ```
 
@@ -143,7 +143,7 @@ Edit `ci.yml`:
 ```yaml
 strategy:
   matrix:
-    java: ['11', '17', '21', '23']  # Add new version
+    java: ['21', '25', '27']  # Add new version
 ```
 
 ### Running additional checks
