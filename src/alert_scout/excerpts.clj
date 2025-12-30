@@ -186,7 +186,7 @@
           ;; Generate excerpts from content
           content-excerpts (when (and content (seq content))
                              (map #(assoc % :source :content)
-                                  (generate-excerpts content matched-terms {:context-chars 50 :max-excerpts 2})))
+                                  (generate-excerpts content matched-terms {:context-chars 50 :max-excerpts 3})))
 
           ;; Combine and limit to 3 total
           all-excerpts (vec (take 3 (concat title-excerpts content-excerpts)))]

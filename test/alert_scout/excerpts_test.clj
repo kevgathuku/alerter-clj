@@ -269,13 +269,39 @@
   (testing "Max 3 total excerpts (1 from title, 2 from content)"
     (let [item {:feed-id "test"
                 :title "Rails API Development"
-                :content (str "Rails is great. Rails is awesome. Rails is powerful. "
-                              "Rails is fast. Rails is elegant. Rails is beautiful.")
+                ;; Content with instances far apart (>100 chars) to prevent consolidation
+                :content (str "Rails is a web framework with many features and capabilities. "
+                              "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do. "
+                              "Rails provides excellent developer productivity and maintainability. "
+                              "Ut enim ad minim veniam quis nostrud exercitation ullamco laboris. "
+                              "Rails has a vibrant community and extensive documentation available.")
                 :link "https://example.com"
                 :published-at (Date.)}
           terms ["rails"]
           result (excerpts/generate-excerpts-for-item item terms)]
-      (is (<= (count result) 3))))
+      (is (<= (count result) 3))
+      ;; Should have 1 from title, 2 from content
+      (is (= 1 (count (filter #(= :title (:source %)) result))))
+      (is (= 2 (count (filter #(= :content (:source %)) result))))))
+
+  (testing "3 content excerpts when title doesn't match"
+    (let [item {:feed-id "test"
+                :title "Something else entirely"
+                ;; Content with instances far apart (>100 chars) to prevent consolidation
+                :content (str "Rails is a powerful web framework for building applications. "
+                              "Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor. "
+                              "Many teams choose Rails for its convention over configuration philosophy. "
+                              "Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut. "
+                              "The Rails community provides extensive support and documentation resources.")
+                :link "https://example.com"
+                :published-at (Date.)}
+          terms ["rails"]
+          result (excerpts/generate-excerpts-for-item item terms)]
+      ;; Should have 3 excerpts, all from content
+      (is (= 3 (count result)))
+      (is (every? #(= :content (:source %)) result))
+      ;; All should contain the matched term
+      (is (every? #(.contains (:text %) "Rails") result))))
 
   (testing "Excerpts have matched-terms field"
     (let [item {:feed-id "test"
