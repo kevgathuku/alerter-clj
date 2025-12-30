@@ -11,60 +11,6 @@
     (.add cal Calendar/DATE (- n))
     (.getTime cal)))
 
-(deftest test-colorize
-  (testing "ANSI color codes are applied"
-    (let [result (core/colorize :green "test")]
-      (is (.contains result "test"))
-      (is (.contains result "\u001b[32m"))   ;; Green code
-      (is (.contains result "\u001b[0m")))))  ;; Reset code
-
-(deftest test-format-alert
-  (testing "Alert formatting includes all key information"
-    (let [alert {:user-id "kevin"
-                 :rule-id "rails-api"
-                 :item {:feed-id "hn"
-                        :title "Building Rails API"
-                        :link "https://example.com/article"
-                        :published-at (Date.)}}
-          formatted (core/format-alert alert)]
-      (is (.contains formatted "kevin"))
-      (is (.contains formatted "rails-api"))
-      (is (.contains formatted "hn"))
-      (is (.contains formatted "Building Rails API"))
-      (is (.contains formatted "https://example.com/article")))))
-
-(deftest test-alerts-to-markdown
-  (testing "Markdown export contains required elements"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
-                   :item {:feed-id "hn"
-                          :title "Test Article"
-                          :link "https://example.com/test"
-                          :published-at (Date.)}}]
-          markdown (core/alerts->markdown alerts)]
-      (is (.contains markdown "# Alert Scout Report"))
-      (is (.contains markdown "Total alerts: 1"))
-      (is (.contains markdown "## Test Article"))
-      (is (.contains markdown "**Feed**: hn"))
-      (is (.contains markdown "**Rule**: rails-api"))
-      (is (.contains markdown "https://example.com/test")))))
-
-(deftest test-alerts-to-json
-  (testing "EDN export is valid and contains data"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
-                   :item {:feed-id "hn"
-                          :title "Test Article"
-                          :link "https://example.com/test"
-                          :published-at (Date.)}}]
-          edn-str (core/alerts->json alerts)
-          parsed (read-string edn-str)]
-      (is (vector? parsed))
-      (is (= 1 (count parsed)))
-      (is (= "kevin" (:user-id (first parsed))))
-      (is (= "rails-api" (:rule-id (first parsed))))
-      (is (= "hn" (:feed-id (first parsed)))))))
-
 (deftest test-format-summary
   (testing "Summary with alerts"
     (let [alerts [{:user-id "kevin"

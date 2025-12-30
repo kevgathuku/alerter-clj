@@ -67,10 +67,10 @@
 
 ### Formatter Namespace (US1)
 
-- [ ] T016 [P] [US1] Create alert-scout.formatter namespace in src/alert_scout/formatter.clj
-- [ ] T017 [P] [US1] Implement highlight-terms-terminal for ANSI colors in src/alert_scout/formatter.clj
-- [ ] T018 [US1] Implement format-alert with excerpt display in src/alert_scout/formatter.clj (depends on T017)
-- [ ] T019 [US1] Update core.clj to require and use formatter namespace (depends on T018)
+- [X] T016 [P] [US1] Create alert-scout.formatter namespace in src/alert_scout/formatter.clj
+- [X] T017 [P] [US1] Implement highlight-terms-terminal for ANSI colors in src/alert_scout/formatter.clj
+- [X] T018 [US1] Implement format-alert with excerpt display in src/alert_scout/formatter.clj (depends on T017)
+- [X] T019 [US1] Update core.clj to require and use formatter namespace (depends on T018)
 
 ### Unit Tests - Excerpts (US1)
 
@@ -87,9 +87,9 @@
 
 ### Unit Tests - Formatter (US1)
 
-- [ ] T030 [P] [US1] Create test namespace in test/alert_scout/formatter_test.clj
-- [ ] T031 [P] [US1] Test highlight-terms-terminal with ANSI colors in test/alert_scout/formatter_test.clj
-- [ ] T032 [P] [US1] Test format-alert with excerpts in test/alert_scout/formatter_test.clj
+- [X] T030 [P] [US1] Create test namespace in test/alert_scout/formatter_test.clj
+- [X] T031 [P] [US1] Test highlight-terms-terminal with ANSI colors in test/alert_scout/formatter_test.clj
+- [X] T032 [P] [US1] Test format-alert with excerpts in test/alert_scout/formatter_test.clj
 
 ### Integration Tests (US1)
 
