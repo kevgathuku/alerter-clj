@@ -74,16 +74,16 @@
 
 ### Unit Tests - Excerpts (US1)
 
-- [ ] T020 [P] [US1] Create test namespace in test/alert_scout/excerpts_test.clj
-- [ ] T021 [P] [US1] Test find-term-positions with case-insensitive matching in test/alert_scout/excerpts_test.clj
-- [ ] T022 [P] [US1] Test find-term-positions with multiple occurrences in test/alert_scout/excerpts_test.clj
-- [ ] T023 [P] [US1] Test extract-excerpt with word boundaries in test/alert_scout/excerpts_test.clj
-- [ ] T024 [P] [US1] Test extract-excerpt with short content in test/alert_scout/excerpts_test.clj
-- [ ] T025 [P] [US1] Test consolidate-excerpts with overlapping excerpts in test/alert_scout/excerpts_test.clj
-- [ ] T026 [P] [US1] Test consolidate-excerpts with distant excerpts in test/alert_scout/excerpts_test.clj
-- [ ] T027 [P] [US1] Test generate-excerpts with max 3 limit in test/alert_scout/excerpts_test.clj
-- [ ] T028 [P] [US1] Test generate-excerpts-for-item with title and content in test/alert_scout/excerpts_test.clj
-- [ ] T029 [P] [US1] Test generate-excerpts-for-item with nil content in test/alert_scout/excerpts_test.clj
+- [X] T020 [P] [US1] Create test namespace in test/alert_scout/excerpts_test.clj
+- [X] T021 [P] [US1] Test find-term-positions with case-insensitive matching in test/alert_scout/excerpts_test.clj
+- [X] T022 [P] [US1] Test find-term-positions with multiple occurrences in test/alert_scout/excerpts_test.clj
+- [X] T023 [P] [US1] Test extract-excerpt with word boundaries in test/alert_scout/excerpts_test.clj
+- [X] T024 [P] [US1] Test extract-excerpt with short content in test/alert_scout/excerpts_test.clj
+- [X] T025 [P] [US1] Test consolidate-excerpts with overlapping excerpts in test/alert_scout/excerpts_test.clj
+- [X] T026 [P] [US1] Test consolidate-excerpts with distant excerpts in test/alert_scout/excerpts_test.clj
+- [X] T027 [P] [US1] Test generate-excerpts with max 3 limit in test/alert_scout/excerpts_test.clj
+- [X] T028 [P] [US1] Test generate-excerpts-for-item with title and content in test/alert_scout/excerpts_test.clj
+- [X] T029 [P] [US1] Test generate-excerpts-for-item with nil content in test/alert_scout/excerpts_test.clj
 
 ### Unit Tests - Formatter (US1)
 

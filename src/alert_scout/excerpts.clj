@@ -76,7 +76,7 @@
         :end excerpt-end
         :position position}))))
 
-(defn- consolidate-excerpts
+(defn consolidate-excerpts
   "Merge excerpts that overlap or are within merge-threshold chars.
 
   Args:
