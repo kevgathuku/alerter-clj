@@ -281,3 +281,10 @@ data/                  # Configuration and state (EDN files)
 doc/                   # Documentation
   malli-examples.md   # Comprehensive Malli usage examples
 ```
+
+## Active Technologies
+- Clojure 1.11+ (existing project language) (001-content-excerpts)
+- N/A (in-memory data transformations, no persistence for excerpts) (001-content-excerpts)
+
+## Recent Changes
+- 001-content-excerpts: Added Clojure 1.11+ (existing project language)
