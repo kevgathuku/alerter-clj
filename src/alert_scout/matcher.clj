@@ -3,6 +3,7 @@
             [alert-scout.excerpts :as excerpts]))
 
 (defn text [item]
+  "Extract and normalize text from feed item - title and content"
   (->> [(:title item) (:content item)]
        (remove nil?)
        (str/join " ")
@@ -28,8 +29,8 @@
    item]
   (let [t (text item)
         ;; Filter matched terms in a single pass
-        must-matches (vec (filter #(contains-term? t %) must))
-        should-matches (vec (filter #(contains-term? t %) should))
+        must-matches (filter #(contains-term? t %) must)
+        should-matches (filter #(contains-term? t %) should)
         must-not-matches (filter #(contains-term? t %) must-not)]
 
     ;; Check all constraints
