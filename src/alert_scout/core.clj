@@ -20,23 +20,19 @@
   (println (formatter/format-alert alert)))
 
 (defn format-summary
-  "Create a summary of all alerts grouped by user and feed."
+  "Create a summary of all alerts grouped by feed."
   [alerts]
   (if (empty? alerts)
     (str "\n" (formatter/colorize :gray "No new alerts found."))
-    (let [by-user (group-by :user-id alerts)
+    (let [by-feed (group-by #(get-in % [:item :feed-id]) alerts)
           total (count alerts)]
       (str "\n" (formatter/colorize :bold (str "═══ SUMMARY ═══"))
            "\n" (formatter/colorize :green (str "Total alerts: " total))
            "\n"
            (str/join "\n"
-                     (for [[user-id user-alerts] by-user]
-                       (let [by-feed (group-by #(get-in % [:item :feed-id]) user-alerts)]
-                         (str "  " (formatter/colorize :yellow (str user-id ": " (count user-alerts) " alerts"))
-                              "\n"
-                              (str/join "\n"
-                                        (for [[feed-id feed-alerts] by-feed]
-                                          (str "    - " (formatter/colorize :cyan feed-id) ": " (count feed-alerts))))))))
+                     (for [[feed-id feed-alerts] by-feed]
+                       (str "  " (formatter/colorize :cyan feed-id) ": "
+                            (formatter/colorize :yellow (str (count feed-alerts) " alerts")))))
            "\n"))))
 
 ;; --- Fetch, match, emit alerts, update checkpoint ---

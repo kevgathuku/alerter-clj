@@ -12,19 +12,16 @@
 
 (deftest test-format-summary
   (testing "Summary with alerts"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rule1"
+    (let [alerts [{:rule-id "rule1"
                    :item {:feed-id "hn" :title "Test 1"}}
-                  {:user-id "kevin"
-                   :rule-id "rule2"
+                  {:rule-id "rule2"
                    :item {:feed-id "blog" :title "Test 2"}}
-                  {:user-id "admin"
-                   :rule-id "rule3"
+                  {:rule-id "rule3"
                    :item {:feed-id "hn" :title "Test 3"}}]
           summary (core/format-summary alerts)]
       (is (.contains summary "Total alerts: 3"))
-      (is (.contains summary "kevin"))
-      (is (.contains summary "admin"))))
+      (is (.contains summary "hn"))
+      (is (.contains summary "blog"))))
 
   (testing "Summary with no alerts"
     (let [summary (core/format-summary [])]
