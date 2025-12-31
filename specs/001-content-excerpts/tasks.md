@@ -93,9 +93,9 @@
 
 ### Integration Tests (US1)
 
-- [ ] T033 [US1] Test match-item returns alerts with excerpts in test/alert_scout/matcher_test.clj (depends on T015)
-- [ ] T034 [US1] Test match-item handles nil content gracefully in test/alert_scout/matcher_test.clj (depends on T015)
-- [ ] T035 [US1] Test core.clj uses formatter namespace correctly in test/alert_scout/core_test.clj (depends on T019)
+- [X] T033 [US1] Test match-item returns alerts with excerpts in test/alert_scout/matcher_test.clj (depends on T015)
+- [X] T034 [US1] Test match-item handles nil content gracefully in test/alert_scout/matcher_test.clj (depends on T015)
+- [X] T035 [US1] Test core.clj uses formatter namespace correctly in test/alert_scout/core_test.clj (depends on T019)
 
 **Checkpoint**: At this point, User Story 1 should be fully functional and testable independently
 

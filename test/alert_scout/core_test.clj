@@ -1,7 +1,6 @@
 (ns alert-scout.core-test
   (:require [clojure.test :refer :all]
             [alert-scout.core :as core]
-            [alert-scout.matcher :as matcher]
             [alert-scout.storage :as storage])
   (:import (java.util Date Calendar)))
 

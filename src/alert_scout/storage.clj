@@ -1,7 +1,8 @@
 (ns alert-scout.storage
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [alert-scout.schemas :as schemas]))
+            [alert-scout.schemas :as schemas]
+            [alert-scout.formatter :as formatter]))
 
 (defn load-edn [path]
   (with-open [r (java.io.PushbackReader. (io/reader path))]
@@ -97,3 +98,15 @@
   [path feed-id]
   (let [feeds (load-feeds path)]
     (first (filter #(= (:feed-id %) feed-id) feeds))))
+
+;; --- Alert export ---
+
+(defn save-alerts!
+  "Save alerts to a file in the specified format (:markdown or :edn)."
+  [alerts path format]
+  (let [content (case format
+                  :markdown (formatter/alerts->markdown alerts)
+                  :edn (formatter/alerts->edn alerts)
+                  (throw (ex-info "Unknown format" {:format format})))]
+    (spit path content)
+    (println (formatter/colorize :green (str "✓ Saved " (count alerts) " alerts to " path)))))

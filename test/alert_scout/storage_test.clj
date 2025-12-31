@@ -134,3 +134,107 @@
         (finally
           (when (.exists (io/file checkpoint-path))
             (io/delete-file checkpoint-path)))))))
+
+(deftest test-save-alerts-markdown
+  (testing "Save alerts to markdown format"
+    (let [alerts [{:user-id "kevin"
+                   :rule-id "rails-api"
+                   :item {:feed-id "hn"
+                          :title "Building Rails API"
+                          :link "https://example.com/test"
+                          :published-at (Date.)}
+                   :excerpts [{:text "Building Rails API"
+                              :matched-terms ["rails" "api"]
+                              :source :title}]}]
+          temp-file "test-resources/test-alerts.md"]
+      (try
+        ;; Save to file
+        (storage/save-alerts! alerts temp-file :markdown)
+
+        ;; Verify file exists
+        (is (.exists (io/file temp-file)))
+
+        ;; Read and verify content
+        (let [content (slurp temp-file)]
+          ;; Should contain markdown formatting
+          (is (.contains content "# Alert Scout Report"))
+          (is (.contains content "Building Rails API"))
+          (is (.contains content "**Rails**"))
+          (is (.contains content "**API**"))
+          (is (.contains content "https://example.com/test")))
+
+        (finally
+          (when (.exists (io/file temp-file))
+            (io/delete-file temp-file))))))
+
+  (testing "Save empty alerts to markdown"
+    (let [temp-file "test-resources/test-empty-alerts.md"]
+      (try
+        (storage/save-alerts! [] temp-file :markdown)
+
+        (let [content (slurp temp-file)]
+          (is (.contains content "# Alert Scout Report"))
+          (is (.contains content "Total alerts: 0")))
+
+        (finally
+          (when (.exists (io/file temp-file))
+            (io/delete-file temp-file)))))))
+
+(deftest test-save-alerts-edn
+  (testing "Save alerts to EDN format"
+    (let [alerts [{:user-id "bob"
+                   :rule-id "test-rule"
+                   :item {:feed-id "blog"
+                          :title "Test Article"
+                          :link "https://example.com/test"
+                          :published-at (Date.)}
+                   :excerpts [{:text "Test excerpt"
+                              :matched-terms ["test"]
+                              :source :content}]}]
+          temp-file "test-resources/test-alerts.edn"]
+      (try
+        ;; Save to file
+        (storage/save-alerts! alerts temp-file :edn)
+
+        ;; Verify file exists
+        (is (.exists (io/file temp-file)))
+
+        ;; Read and verify content
+        (let [content (slurp temp-file)
+              parsed (read-string content)]
+          ;; Should be valid EDN
+          (is (vector? parsed))
+          (is (= 1 (count parsed)))
+          (is (= "bob" (:user-id (first parsed))))
+          (is (= "test-rule" (:rule-id (first parsed))))
+          ;; Should include excerpts
+          (is (vector? (:excerpts (first parsed))))
+          (is (= 1 (count (:excerpts (first parsed)))))
+          (is (= "Test excerpt" (:text (first (:excerpts (first parsed)))))))
+
+        (finally
+          (when (.exists (io/file temp-file))
+            (io/delete-file temp-file))))))
+
+  (testing "Save empty alerts to EDN"
+    (let [temp-file "test-resources/test-empty-alerts.edn"]
+      (try
+        (storage/save-alerts! [] temp-file :edn)
+
+        (let [content (slurp temp-file)
+              parsed (read-string content)]
+          (is (vector? parsed))
+          (is (empty? parsed)))
+
+        (finally
+          (when (.exists (io/file temp-file))
+            (io/delete-file temp-file)))))))
+
+(deftest test-save-alerts-invalid-format
+  (testing "Invalid format throws error"
+    (let [alerts [{:user-id "alice"
+                   :rule-id "test"
+                   :item {:feed-id "hn" :title "Test"}}]
+          temp-file "test-resources/test-alerts.txt"]
+      (is (thrown-with-msg? Exception #"Unknown format"
+                            (storage/save-alerts! alerts temp-file :invalid))))))
