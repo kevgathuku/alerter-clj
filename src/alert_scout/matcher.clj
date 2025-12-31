@@ -11,43 +11,54 @@
 (defn contains-term? [text term]
   (str/includes? (str/lower-case text) (str/lower-case term)))
 
-(defn match-rule?
-  "Match a simplified string-based rule against a feed item."
-  [{:keys [must should must-not min-should-match]
-    :or {should [] min-should-match 0}}
-   item]
-  (let [t (text item)]
-    (and
-     (every? #(contains-term? t %) must)
-     (not-any? #(contains-term? t %) must-not)
-     (>= (count (filter #(contains-term? t %) should))
-         min-should-match))))
+(defn apply-rule
+  "Apply a rule to an item and return matched terms if the rule passes.
 
-(defn get-matched-terms
-  "Extract terms that actually matched from rule.
+  Checks all rule constraints (must, should, must-not, min-should-match) in a single pass.
 
   Args:
-    rule - Rule map with :must, :should, :must-not fields
-    item - FeedItem to check terms against
+    rule - Rule map with :must, :should, :must-not, :min-should-match fields
+    item - FeedItem to match against
 
-  Returns vector of matched terms (lowercase for consistency)."
-  [rule item]
+  Returns:
+    Vector of matched terms (from must + should) if rule matches
+    nil if rule does not match"
+  [{:keys [must should must-not min-should-match]
+    :or {must [] should [] must-not [] min-should-match 0}}
+   item]
   (let [t (text item)
-        must-terms (or (:must rule) [])
-        should-terms (or (:should rule) [])
-        must-matches (filter #(contains-term? t %) must-terms)
-        should-matches (filter #(contains-term? t %) should-terms)]
-    (vec (distinct (concat must-matches should-matches)))))
+        ;; Filter matched terms in a single pass
+        must-matches (vec (filter #(contains-term? t %) must))
+        should-matches (vec (filter #(contains-term? t %) should))
+        must-not-matches (filter #(contains-term? t %) must-not)]
+
+    ;; Check all constraints
+    (when (and
+           ;; All must terms present
+           (= (count must-matches) (count must))
+           ;; No must-not terms present
+           (zero? (count must-not-matches))
+           ;; Sufficient should terms
+           (>= (count should-matches) min-should-match))
+      ;; Return matched terms (must + should, distinct)
+      (vec (distinct (concat must-matches should-matches))))))
 
 (defn match-item
   "Return vector of alerts for a single item.
 
-  Each alert includes excerpts showing where matched terms appear."
+  Each alert includes excerpts showing where matched terms appear.
+
+  Args:
+    rules - Vector of rule maps
+    item - FeedItem to match against rules
+
+  Returns:
+    Vector of alert maps with :rule-id, :item, and :excerpts"
   [rules item]
   (for [rule rules
-        :when (match-rule? rule item)
-        :let [matched-terms (get-matched-terms rule item)
-              item-excerpts (excerpts/generate-excerpts-for-item item matched-terms)]]
+        :let [matched-terms (apply-rule rule item)]
+        :when (some? matched-terms)
+        :let [item-excerpts (excerpts/generate-excerpts-for-item item matched-terms)]]
     {:rule-id (:id rule)
      :item item
      :excerpts item-excerpts}))
