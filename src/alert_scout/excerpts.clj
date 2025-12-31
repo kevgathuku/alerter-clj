@@ -108,6 +108,8 @@
         []
         sorted)))))
 
+(def content-defaults {:context-chars 50  :max-excerpts 3})
+
 (defn generate-excerpts
   "Generate excerpts from text showing matched terms with context.
 
@@ -122,8 +124,8 @@
   ([text matched-terms opts]
    (if (or (nil? text) (empty? text) (nil? matched-terms) (empty? matched-terms))
      []
-     (let [context-chars (get opts :context-chars 50)
-           max-excerpts (get opts :max-excerpts 3)
+     (let [context-chars ((merge content-defaults opts) :context-chars)
+           max-excerpts ((merge content-defaults opts) :max-excerpts)
 
            ;; Limit text length for performance (<5ms requirement)
            text-to-process (if (> (count text) 5000)
@@ -151,8 +153,8 @@
                                          needs-end-ellipsis (< end text-len)
                                          excerpt-text (subs text-to-process start end)
                                          final-text (str (when needs-start-ellipsis "...")
-                                                        excerpt-text
-                                                        (when needs-end-ellipsis "..."))]
+                                                         excerpt-text
+                                                         (when needs-end-ellipsis "..."))]
                                      (assoc excerpt :text final-text)))
                                  consolidated)
 
@@ -181,12 +183,12 @@
           ;; Generate excerpts from title
           title-excerpts (when (and title (seq title))
                            (map #(assoc % :source :title)
-                                (generate-excerpts title matched-terms {:context-chars 50 :max-excerpts 1})))
+                                (generate-excerpts title matched-terms (assoc content-defaults :max-excerpts 1))))
 
           ;; Generate excerpts from content
           content-excerpts (when (and content (seq content))
                              (map #(assoc % :source :content)
-                                  (generate-excerpts content matched-terms {:context-chars 50 :max-excerpts 3})))
+                                  (generate-excerpts content matched-terms content-defaults)))
 
           ;; Combine and limit to 3 total
           all-excerpts (vec (take 3 (concat title-excerpts content-excerpts)))]
