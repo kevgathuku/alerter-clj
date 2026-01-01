@@ -2,7 +2,7 @@ name: Feed alerts
 
 on:
   schedule:
-    - cron: "*/15 * * * *" # Every 15 minutes
+    - cron: "10 * * * *" # Every hour
   workflow_dispatch: # Allow manual run
 
 jobs:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: gh-pages
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
