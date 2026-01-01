@@ -81,6 +81,21 @@ jobs:
           echo "Contents of content/ directory:"
           ls -laR content/ || echo "content/ directory not found"
 
+      - name: Flatten artifact structure
+        run: |
+          # Move files from content/alerts-*/... to content/...
+          if [ -d "content" ]; then
+            for artifact_dir in content/alerts-*; do
+              if [ -d "$artifact_dir" ]; then
+                echo "Moving contents from $artifact_dir to content/"
+                cp -r "$artifact_dir"/* content/
+                rm -rf "$artifact_dir"
+              fi
+            done
+          fi
+          echo "Final content structure:"
+          ls -laR content/ || echo "content/ directory not found"
+
       - name: Generate Jekyll post
         run: |
           # Use provided date or default to yesterday
