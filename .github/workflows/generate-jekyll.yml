@@ -49,7 +49,7 @@ jobs:
 
       # Download all alert artifacts from the alerts workflow
       - name: Download alert artifacts
-        uses: dawidd6/action-download-artifact@v3
+        uses: dawidd6/action-download-artifact@v11
         with:
           workflow: alerts.yml
           name: alerts-*
