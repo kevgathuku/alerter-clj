@@ -28,6 +28,7 @@ github_username:  kevgathuku
 
 # Build settings
 theme: minima
+permalink: /:year/:month/:day/:title/
 plugins:
   - jekyll-feed
 
