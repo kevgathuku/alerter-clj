@@ -125,13 +125,13 @@
        "Total alerts: " (count alerts) "\n\n"
        (str/join "\n\n"
                  (for [alert alerts]
-                   (let [{:keys [user-id rule-id item excerpts]} alert
+                   (let [{:keys [rule-id item excerpts]} alert
                          {:keys [feed-id title link published-at]} item
                          date-str (when published-at
                                    (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm") published-at))]
                      (str "## " title "\n\n"
                           "- **Feed**: " feed-id "\n"
-                          "- **Rule**: " rule-id " (User: " user-id ")\n"
+                          "- **Rule**: " rule-id "\n"
                           "- **Link**: " link "\n"
                           (when date-str (str "- **Published**: " date-str "\n"))
                           (when (and excerpts (seq excerpts))
@@ -156,8 +156,7 @@
   Returns EDN string representation of alerts."
   [alerts]
   (pr-str (mapv (fn [alert]
-                  {:user-id (:user-id alert)
-                   :rule-id (:rule-id alert)
+                  {:rule-id (:rule-id alert)
                    :feed-id (get-in alert [:item :feed-id])
                    :title (get-in alert [:item :title])
                    :link (get-in alert [:item :link])

@@ -36,6 +36,9 @@ pom.xml.asc
 .lsp/
 .rebel_readline_history
 
+# Test artifacts
+test-resources/
+
 # Universal patterns
 .DS_Store
 Thumbs.db

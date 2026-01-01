@@ -81,14 +81,12 @@
 
 (deftest test-format-alert-without-excerpts
   (testing "Alert formatting includes all key information without excerpts"
-    (let [alert {:user-id "kevin"
-                 :rule-id "rails-api"
+    (let [alert {:rule-id "rails-api"
                  :item {:feed-id "hn"
                         :title "Building Rails API"
                         :link "https://example.com/article"
                         :published-at (Date.)}}
           formatted (formatter/format-alert alert)]
-      (is (.contains formatted "kevin"))
       (is (.contains formatted "rails-api"))
       (is (.contains formatted "hn"))
       (is (.contains formatted "Building Rails API"))
@@ -96,8 +94,7 @@
 
 (deftest test-format-alert-with-excerpts
   (testing "Alert formatting includes excerpts with highlighting"
-    (let [alert {:user-id "alice"
-                 :rule-id "rails-api"
+    (let [alert {:rule-id "rails-api"
                  :item {:feed-id "hn"
                         :title "Building Rails API"
                         :link "https://example.com/article"
@@ -110,7 +107,6 @@
                             :source :content}]}
           formatted (formatter/format-alert alert)]
       ;; Should contain alert metadata
-      (is (.contains formatted "alice"))
       (is (.contains formatted "rails-api"))
       ;; Should contain source labels
       (is (.contains formatted "[Title]"))
@@ -121,8 +117,7 @@
 
 (deftest test-format-alert-with-empty-excerpts
   (testing "Alert formatting handles empty excerpts gracefully"
-    (let [alert {:user-id "bob"
-                 :rule-id "test-rule"
+    (let [alert {:rule-id "test-rule"
                  :item {:feed-id "blog"
                         :title "Test Article"
                         :link "https://example.com/test"
@@ -130,7 +125,6 @@
                  :excerpts []}
           formatted (formatter/format-alert alert)]
       ;; Should still show alert metadata
-      (is (.contains formatted "bob"))
       (is (.contains formatted "test-rule"))
       ;; Should not have excerpt sections
       (is (not (.contains formatted "[Title]")))
@@ -140,8 +134,7 @@
 
 (deftest test-alerts-to-markdown-without-excerpts
   (testing "Markdown export contains required elements without excerpts"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
+    (let [alerts [{:rule-id "rails-api"
                    :item {:feed-id "hn"
                           :title "Test Article"
                           :link "https://example.com/test"
@@ -156,8 +149,7 @@
 
 (deftest test-alerts-to-markdown-with-excerpts
   (testing "Markdown export includes excerpts with bold formatting"
-    (let [alerts [{:user-id "alice"
-                   :rule-id "rails-api"
+    (let [alerts [{:rule-id "rails-api"
                    :item {:feed-id "hn"
                           :title "Building Rails API"
                           :link "https://example.com/test"
@@ -180,8 +172,7 @@
 
 (deftest test-alerts-to-edn-without-excerpts
   (testing "EDN export is valid and contains data without excerpts"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
+    (let [alerts [{:rule-id "rails-api"
                    :item {:feed-id "hn"
                           :title "Test Article"
                           :link "https://example.com/test"
@@ -190,14 +181,12 @@
           parsed (read-string edn-str)]
       (is (vector? parsed))
       (is (= 1 (count parsed)))
-      (is (= "kevin" (:user-id (first parsed))))
       (is (= "rails-api" (:rule-id (first parsed))))
       (is (= "hn" (:feed-id (first parsed)))))))
 
 (deftest test-alerts-to-edn-with-excerpts
   (testing "EDN export includes excerpts as structured data"
-    (let [alerts [{:user-id "alice"
-                   :rule-id "rails-api"
+    (let [alerts [{:rule-id "rails-api"
                    :item {:feed-id "hn"
                           :title "Building Rails API"
                           :link "https://example.com/test"
@@ -209,7 +198,7 @@
           parsed (read-string edn-str)]
       (is (vector? parsed))
       (is (= 1 (count parsed)))
-      (is (= "alice" (:user-id (first parsed))))
+      (is (= "rails-api" (:rule-id (first parsed))))
       ;; Should include excerpts
       (is (vector? (:excerpts (first parsed))))
       (is (= 1 (count (:excerpts (first parsed)))))

@@ -170,8 +170,7 @@
 
 (deftest test-save-alerts-edn
   (testing "Save alerts to EDN format"
-    (let [alerts [{:user-id "bob"
-                   :rule-id "test-rule"
+    (let [alerts [{:rule-id "test-rule"
                    :item {:feed-id "blog"
                           :title "Test Article"
                           :link "https://example.com/test"
@@ -193,7 +192,6 @@
           ;; Should be valid EDN
           (is (vector? parsed))
           (is (= 1 (count parsed)))
-          (is (= "bob" (:user-id (first parsed))))
           (is (= "test-rule" (:rule-id (first parsed))))
           ;; Should include excerpts
           (is (vector? (:excerpts (first parsed))))

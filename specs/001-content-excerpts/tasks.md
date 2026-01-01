@@ -109,17 +109,17 @@
 
 ### Export Functions (US2)
 
-- [ ] T036 [P] [US2] Implement highlight-terms-markdown for bold formatting in src/alert_scout/formatter.clj
-- [ ] T037 [P] [US2] Implement alerts->markdown with excerpt support in src/alert_scout/formatter.clj
-- [ ] T038 [P] [US2] Implement alerts->edn with excerpt support in src/alert_scout/formatter.clj
+- [X] T036 [P] [US2] Implement highlight-terms-markdown for bold formatting in src/alert_scout/formatter.clj
+- [X] T037 [P] [US2] Implement alerts->markdown with excerpt support in src/alert_scout/formatter.clj
+- [X] T038 [P] [US2] Implement alerts->edn with excerpt support in src/alert_scout/formatter.clj
 - [X] T039 [US2] Implement save-alerts! in storage.clj using formatter functions (depends on T037, T038)
 
 ### Export Tests (US2)
 
-- [ ] T040 [P] [US2] Test highlight-terms-markdown preserves case in test/alert_scout/formatter_test.clj
-- [ ] T041 [P] [US2] Test alerts->markdown includes excerpts with bold formatting in test/alert_scout/formatter_test.clj
-- [ ] T042 [P] [US2] Test alerts->edn includes excerpts as structured data in test/alert_scout/formatter_test.clj
-- [ ] T043 [US2] Test markdown export renders correctly (manual verification via quickstart.md example) (depends on T039)
+- [X] T040 [P] [US2] Test highlight-terms-markdown preserves case in test/alert_scout/formatter_test.clj
+- [X] T041 [P] [US2] Test alerts->markdown includes excerpts with bold formatting in test/alert_scout/formatter_test.clj
+- [X] T042 [P] [US2] Test alerts->edn includes excerpts as structured data in test/alert_scout/formatter_test.clj
+- [X] T043 [US2] Test markdown export renders correctly (manual verification via quickstart.md example) (depends on T039)
 
 **Checkpoint**: At this point, User Stories 1 AND 2 should both work independently
 
