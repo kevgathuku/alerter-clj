@@ -12,6 +12,10 @@ on:
         description: 'Date to generate post for (YYYY-MM-DD, defaults to yesterday)'
         required: false
         type: string
+      run_id:
+        description: 'Specific workflow run ID to download artifacts from (for debugging)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -57,6 +61,12 @@ jobs:
           search_artifacts: true
           branch: main
           workflow_conclusion: success
+          run_id: ${{ github.event.inputs.run_id }}
+
+      - name: List downloaded artifacts
+        run: |
+          echo "Contents of content/ directory:"
+          ls -laR content/ || echo "content/ directory not found"
 
       - name: Generate Jekyll post
         run: |
