@@ -2,8 +2,9 @@
   (:require [clojure.string :as str]
             [alert-scout.excerpts :as excerpts]))
 
-(defn text [item]
+(defn text
   "Extract and normalize text from feed item - title and content"
+  [item]
   (->> [(:title item) (:content item)]
        (remove nil?)
        (str/join " ")

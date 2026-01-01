@@ -19,21 +19,23 @@
   [alert]
   (println (formatter/format-alert alert)))
 
-(defn format-summary
-  "Create a summary of all alerts grouped by feed."
-  [alerts]
-  (if (empty? alerts)
-    (str "\n" (formatter/colorize :gray "No new alerts found."))
-    (let [by-feed (group-by #(get-in % [:item :feed-id]) alerts)
-          total (count alerts)]
-      (str "\n" (formatter/colorize :bold (str "═══ SUMMARY ═══"))
-           "\n" (formatter/colorize :green (str "Total alerts: " total))
-           "\n"
-           (str/join "\n"
-                     (for [[feed-id feed-alerts] by-feed]
-                       (str "  " (formatter/colorize :cyan feed-id) ": "
-                            (formatter/colorize :yellow (str (count feed-alerts) " alerts")))))
-           "\n"))))
+(defn alerts-summary
+  "Create a summary of all alerts grouped by matched alerts"
+  ([alerts] (alerts-summary alerts false))
+  ([alerts colorize?]
+   (let [colorize (fn [color text] (if colorize? (formatter/colorize color text) text))]
+     (if (empty? alerts)
+       (str "\n" (colorize :gray "No new alerts found."))
+       (let [by-feed (group-by :rule-id alerts)
+             total (count alerts)]
+         (str "\n" (colorize :bold "═══ SUMMARY ═══")
+              "\n" (colorize :green (str "Total alerts: " total))
+              "\n"
+              (str/join "\n"
+                        (for [[feed-id feed-alerts] by-feed]
+                          (str "  " (colorize :cyan feed-id) ": "
+                               (colorize :yellow (str (count feed-alerts) " alerts")))))
+              "\n"))))))
 
 ;; --- Fetch, match, emit alerts, update checkpoint ---
 (defn process-feed
@@ -74,7 +76,7 @@
        (when latest-item
          (storage/update-checkpoint! feed-id (:published-at latest-item) "data/checkpoints.edn")))
 
-     (println (format-summary all-alerts))
+     (println (alerts-summary all-alerts true))
      (println (formatter/colorize :gray (str "Processed " total-items " new items across " (count feeds) " feeds\n")))
 
      {:alerts (vec all-alerts)
