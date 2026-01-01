@@ -163,27 +163,6 @@
                    :excerpts (:excerpts alert)})
                 alerts)))
 
-;; --- Deduplication ---
-
-(defn deduplicate-alerts-by-url
-  "Deduplicate alerts by URL within each rule-id group.
-
-  Args:
-    alerts - Vector of alert maps
-
-  Returns vector of alerts with duplicates removed (keeps first occurrence per URL per rule-id)."
-  [alerts]
-  (let [by-rule (group-by :rule-id alerts)]
-    (vec (mapcat (fn [[_rule-id rule-alerts]]
-                   (vals (reduce (fn [acc alert]
-                                   (let [url (get-in alert [:item :link])]
-                                     (if (contains? acc url)
-                                       acc
-                                       (assoc acc url alert))))
-                                 {}
-                                 rule-alerts)))
-                 by-rule))))
-
 ;; --- Jekyll Post Formatting ---
 
 (defn alerts->jekyll

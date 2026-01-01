@@ -114,29 +114,29 @@
         (println (formatter/colorize :green (str "✓ Saved " (count rule-alerts) " alerts for " rule-id " to " path)))))))
 
 (defn save-alerts-jekyll!
-  "Save deduplicated alerts as a Jekyll blog post for a single day.
+  "Save alerts as a Jekyll blog post for a single day.
 
   Args:
-    alerts - Vector of alert maps
+    alerts - Vector of alert maps (should already be deduplicated from run-once)
     blog-dir - Path to blog directory (default: 'blog')
     date - java.util.Date for the post (default: today)
 
   The function will:
-  1. Deduplicate alerts by URL per rule-id
-  2. Generate Jekyll post with front matter
-  3. Save to blog/_posts/YYYY-MM-DD-alert-scout-daily-report.markdown"
+  1. Generate Jekyll post with front matter
+  2. Save to blog/_posts/YYYY-MM-DD-alert-scout-daily-report.markdown
+
+  Note: Alerts are assumed to be deduplicated by run-once. If calling this
+  with alerts from other sources, deduplicate first using core/deduplicate-alerts-by-url."
   ([alerts]
    (save-alerts-jekyll! alerts "blog" (java.util.Date.)))
   ([alerts blog-dir]
    (save-alerts-jekyll! alerts blog-dir (java.util.Date.)))
   ([alerts blog-dir ^java.util.Date date]
-   (let [deduplicated-alerts (formatter/deduplicate-alerts-by-url alerts)
-         {:keys [filename content]} (formatter/alerts->jekyll deduplicated-alerts date)
+   (let [{:keys [filename content]} (formatter/alerts->jekyll alerts date)
          posts-dir (str blog-dir "/_posts")
          path (str posts-dir "/" filename)]
      (io/make-parents path)
      (spit path content)
      (println (formatter/colorize :green
-                                  (str "✓ Saved " (count deduplicated-alerts)
-                                       " deduplicated alerts (from " (count alerts)
-                                       " total) to " path))))))
+                                  (str "✓ Saved " (count alerts)
+                                       " alerts to " path))))))

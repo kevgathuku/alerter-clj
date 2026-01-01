@@ -13,6 +13,27 @@
 (def feeds (storage/load-feeds "data/feeds.edn"))
 (storage/load-checkpoints! "data/checkpoints.edn")
 
+;; --- Alert deduplication ---
+(defn deduplicate-alerts-by-url
+  "Deduplicate alerts by URL within each rule-id group.
+  This removes duplicate articles that match multiple feeds but have the same URL.
+
+  Args:
+    alerts - Vector of alert maps
+
+  Returns vector of alerts with duplicates removed (keeps first occurrence per URL per rule-id)."
+  [alerts]
+  (let [by-rule (group-by :rule-id alerts)]
+    (vec (mapcat (fn [[_rule-id rule-alerts]]
+                   (vals (reduce (fn [acc alert]
+                                   (let [url (get-in alert [:item :link])]
+                                     (if (contains? acc url)
+                                       acc
+                                       (assoc acc url alert))))
+                                 {}
+                                 rule-alerts)))
+                 by-rule))))
+
 ;; --- Alert formatting (using formatter namespace) ---
 (defn emit-alert
   "Print a formatted alert."
@@ -60,7 +81,8 @@
 (defn run-once
   "Process feeds for new items and emit alerts.
    If no feeds provided, uses the feeds loaded from data/feeds.edn.
-   Returns a map with :alerts (all alerts found) and :items-processed (total items)."
+   Deduplicates alerts by URL per rule-id before returning.
+   Returns a map with :alerts (deduplicated alerts) and :items-processed (total items)."
   ([]
    (run-once feeds))
   ([feeds]
@@ -68,6 +90,8 @@
    (let [results (map process-feed feeds)
          ;; Aggregate results
          all-alerts (mapcat :alerts results)
+         ;; Deduplicate at the earliest point - same article from multiple feeds
+         deduplicated-alerts (deduplicate-alerts-by-url all-alerts)
          total-items (reduce + 0 (map :item-count results))]
 
      ;; Perform side effects after data processing
@@ -77,10 +101,12 @@
        (when latest-item
          (storage/update-checkpoint! feed-id (:published-at latest-item) "data/checkpoints.edn")))
 
-     (println (alerts-summary all-alerts true))
-     (println (formatter/colorize :gray (str "Processed " total-items " new items across " (count feeds) " feeds\n")))
+     (println (alerts-summary deduplicated-alerts true))
+     (println (formatter/colorize :gray (str "Processed " total-items " new items across " (count feeds) " feeds")))
+     (when (not= (count all-alerts) (count deduplicated-alerts))
+       (println (formatter/colorize :gray (str "Deduplicated " (- (count all-alerts) (count deduplicated-alerts)) " duplicate URLs\n"))))
 
-     {:alerts (vec all-alerts)
+     {:alerts (vec deduplicated-alerts)
       :items-processed total-items})))
 
 (defn -main
@@ -101,8 +127,8 @@
      lein generate-jekyll 2026-01-01   # Use specific date
 
    This reads all EDN alert files from content/*/{date}/*.edn,
-   deduplicates by URL per rule-id, and generates a Jekyll markdown post
-   in blog/_posts/{date}-alert-scout-daily-report.markdown"
+   deduplicates by URL per rule-id (in case alerts were saved from multiple runs),
+   and generates a Jekyll markdown post in blog/_posts/{date}-alert-scout-daily-report.markdown"
   [& args]
   (let [date-str (or (first args)
                      (.format (java.text.SimpleDateFormat. "yyyy-MM-dd")
@@ -121,14 +147,20 @@
                                                   (storage/load-edn (.getPath ^java.io.File edn-file))))
                                               (.listFiles ^java.io.File date-dir-file)))))
                                 (filter #(.isDirectory ^java.io.File %)
-                                        (.listFiles ^java.io.File (clojure.java.io/file "content")))))]
+                                        (.listFiles ^java.io.File (clojure.java.io/file "content")))))
+        ;; Deduplicate in case there were multiple runs saving to the same date
+        deduplicated-alerts (deduplicate-alerts-by-url all-alerts)]
 
-    (if (seq all-alerts)
+    (if (seq deduplicated-alerts)
       (do
         (println (formatter/colorize :cyan
                                     (str "Loaded " (count all-alerts)
                                          " alerts for " date-str)))
-        (storage/save-alerts-jekyll! all-alerts "blog" date)
+        (when (not= (count all-alerts) (count deduplicated-alerts))
+          (println (formatter/colorize :gray
+                                      (str "Deduplicated " (- (count all-alerts) (count deduplicated-alerts))
+                                           " duplicate URLs"))))
+        (storage/save-alerts-jekyll! deduplicated-alerts "blog" date)
         (println (formatter/colorize :green
                                     (str "✓ Jekyll post generated for " date-str))))
       (println (formatter/colorize :yellow
