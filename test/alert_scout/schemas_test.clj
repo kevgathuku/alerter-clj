@@ -94,8 +94,7 @@
 (deftest test-alert-with-excerpts
   (testing "Valid alert with excerpts"
     (is (schemas/valid? schemas/Alert
-                        {:user-id "alice"
-                         :rule-id "test-rule"
+                        {:rule-id "test-rule"
                          :item (valid-feed-item)
                          :excerpts [{:text "...Rails API..."
                                      :matched-terms ["rails" "api"]
@@ -103,8 +102,7 @@
 
   (testing "Valid alert with multiple excerpts (up to 3)"
     (is (schemas/valid? schemas/Alert
-                        {:user-id "alice"
-                         :rule-id "test-rule"
+                        {:rule-id "test-rule"
                          :item (valid-feed-item)
                          :excerpts [{:text "excerpt1"
                                      :matched-terms ["rails"]
@@ -121,22 +119,19 @@
                                     :matched-terms ["term"]
                                     :source :content})]
       (is (schemas/valid? schemas/Alert
-                          {:user-id "alice"
-                           :rule-id "test-rule"
+                          {:rule-id "test-rule"
                            :item (valid-feed-item)
                            :excerpts (vec three-excerpts)})))))
 
 (deftest test-alert-without-excerpts-backwards-compatible
   (testing "Valid alert without excerpts field (backwards compatible)"
     (is (schemas/valid? schemas/Alert
-                        {:user-id "alice"
-                         :rule-id "test-rule"
+                        {:rule-id "test-rule"
                          :item (valid-feed-item)})))
 
   (testing "Valid alert with empty excerpts vector"
     (is (schemas/valid? schemas/Alert
-                        {:user-id "alice"
-                         :rule-id "test-rule"
+                        {:rule-id "test-rule"
                          :item (valid-feed-item)
                          :excerpts []}))))
 
@@ -146,15 +141,13 @@
                                    :matched-terms ["term"]
                                    :source :content})]
       (is (not (schemas/valid? schemas/Alert
-                               {:user-id "alice"
-                                :rule-id "test-rule"
+                               {:rule-id "test-rule"
                                 :item (valid-feed-item)
                                 :excerpts (vec four-excerpts)})))))
 
   (testing "Invalid alert - excerpts contain invalid excerpt"
     (is (not (schemas/valid? schemas/Alert
-                             {:user-id "alice"
-                              :rule-id "test-rule"
+                             {:rule-id "test-rule"
                               :item (valid-feed-item)
                               :excerpts [{:text ""
                                           :matched-terms []
@@ -162,8 +155,7 @@
 
 (deftest test-alert-validation-function
   (testing "validate-alert with valid data"
-    (let [valid-alert {:user-id "alice"
-                       :rule-id "test-rule"
+    (let [valid-alert {:rule-id "test-rule"
                        :item (valid-feed-item)
                        :excerpts [{:text "excerpt"
                                    :matched-terms ["term"]
@@ -173,6 +165,5 @@
   (testing "validate-alert throws on invalid data"
     (is (thrown? Exception
                  (schemas/validate-alert
-                  {:user-id ""
-                   :rule-id "test"
+                  {:rule-id ""
                    :item (valid-feed-item)})))))

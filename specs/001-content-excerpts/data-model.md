@@ -61,8 +61,7 @@ This document defines the data structures for excerpt generation, following the 
 **Schema** (modifications only):
 ```clojure
 (def Alert
-  [:map {:description "Alert generated when feed item matches user rule"}
-   [:user-id [:string {:min 1}]]
+  [:map {:description "Alert generated when feed item matches rule"}
    [:rule-id [:string {:min 1}]]
    [:item FeedItem]
    ;; NEW FIELD
@@ -81,10 +80,11 @@ This document defines the data structures for excerpt generation, following the 
 - `:excerpts` field is optional - existing alerts without excerpts remain valid
 - Export functions handle both with/without excerpts gracefully
 
+**Note**: The `:user-id` field was removed during implementation as the system operates on rule-based matching without user grouping.
+
 **Example Instance**:
 ```clojure
-{:user-id "alice"
- :rule-id "rails-api"
+{:rule-id "rails-api"
  :item {:feed-id "hn"
         :title "Building Rails API"
         :link "https://example.com"

@@ -49,7 +49,6 @@
 (def Alert
   "Schema for an alert."
   [:map
-   [:user-id [:string {:min 1}]]
    [:rule-id [:string {:min 1}]]
    [:item FeedItem]
    [:excerpts {:optional true} [:vector {:max 3} Excerpt]]])

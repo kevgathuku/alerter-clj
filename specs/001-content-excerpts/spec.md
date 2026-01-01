@@ -85,12 +85,9 @@ As an Alert Scout user, when I export alerts to markdown or EDN format, I want e
   - Relationships: belongs to an Alert, references multiple matched terms
 
 - **Alert** (enhanced): Existing entity now includes excerpts
-  - Attributes: user-id, rule-id, item (feed item), excerpts (new)
+  - Attributes: rule-id, item (feed item), excerpts (new)
   - Relationships: contains multiple Excerpts
-
-- **Matched Term**: A term from the rule that was found in the content
-  - Attributes: term text, positions in content (start/end indices)
-  - Relationships: appears in one or more Excerpts
+  - Note: user-id field removed during implementation (rule-based matching only)
 
 ## Success Criteria
 
