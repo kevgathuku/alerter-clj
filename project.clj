@@ -27,6 +27,7 @@
                            (println "  (doc symbol)              - Show documentation")
                            (println "  (source symbol)           - Show source code")
                            (println "  (dir namespace)           - List namespace contents\n")))}
+  :aliases {"generate-jekyll" ["run" "-m" "alert-scout.core/-generate-jekyll"]}
   :profiles {:dev {:dependencies [[nrepl/nrepl "1.3.0"]]}
              :uberjar {:aot :all
                        :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}})

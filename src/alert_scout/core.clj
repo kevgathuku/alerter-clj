@@ -85,11 +85,53 @@
 
 (defn -main
   "Main entry point for lein run.
-   Saves alerts as individual EDN files in content/{rule-id}/YYYY-MM-DD/{timestamp}.edn
-   and as a Jekyll blog post in blog/_posts/YYYY-MM-DD-alert-scout-daily-report.markdown"
+   Fetches feeds, matches rules, and saves alerts as individual EDN files
+   in content/{rule-id}/YYYY-MM-DD/{timestamp}.edn"
   [& args]
   (let [{:keys [alerts]} (run-once)]
     (when (seq alerts)
-      (storage/save-alerts-individual! alerts "content")
-      (storage/save-alerts-jekyll! alerts "blog"))
+      (storage/save-alerts-individual! alerts "content"))
+    (shutdown-agents)))
+
+(defn -generate-jekyll
+  "Generate Jekyll blog post from all alerts saved on a specific date.
+
+   Usage:
+     lein generate-jekyll              # Use today's date
+     lein generate-jekyll 2026-01-01   # Use specific date
+
+   This reads all EDN alert files from content/*/{date}/*.edn,
+   deduplicates by URL per rule-id, and generates a Jekyll markdown post
+   in blog/_posts/{date}-alert-scout-daily-report.markdown"
+  [& args]
+  (let [date-str (or (first args)
+                     (.format (java.text.SimpleDateFormat. "yyyy-MM-dd")
+                              (java.util.Date.)))
+        ;; Parse date string back to Date for Jekyll formatter
+        date-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd")
+        date (.parse date-formatter date-str)
+
+        ;; Load all alerts for the specified date
+        all-alerts (vec (mapcat (fn [rule-dir]
+                                  (let [date-dir (str rule-dir "/" date-str)
+                                        date-dir-file (clojure.java.io/file date-dir)]
+                                    (when (.exists ^java.io.File date-dir-file)
+                                      (mapcat (fn [edn-file]
+                                                (when (.endsWith ^String (.getName ^java.io.File edn-file) ".edn")
+                                                  (storage/load-edn (.getPath ^java.io.File edn-file))))
+                                              (.listFiles ^java.io.File date-dir-file)))))
+                                (filter #(.isDirectory ^java.io.File %)
+                                        (.listFiles ^java.io.File (clojure.java.io/file "content")))))]
+
+    (if (seq all-alerts)
+      (do
+        (println (formatter/colorize :cyan
+                                    (str "Loaded " (count all-alerts)
+                                         " alerts for " date-str)))
+        (storage/save-alerts-jekyll! all-alerts "blog" date)
+        (println (formatter/colorize :green
+                                    (str "✓ Jekyll post generated for " date-str))))
+      (println (formatter/colorize :yellow
+                                  (str "No alerts found for " date-str))))
+
     (shutdown-agents)))
