@@ -60,17 +60,20 @@
 
 ;; --- Fetch, match, emit alerts, update checkpoint ---
 (defn process-feed
-  "Process a single feed and return its results without side effects."
+  "Process a single feed and return its results without side effects.
+   If feed fetch fails (HTTP errors, rate limiting, etc), returns empty results
+   but processing continues for other feeds."
   [feed]
   (let [{:keys [feed-id]} feed
         last-seen (storage/last-seen feed-id)
+        ;; fetch-items returns [] on error, so we can safely continue
         items (->> (fetcher/fetch-items feed)
                    (filter #(when-let [ts (:published-at %)]
                               (or (nil? last-seen) (.after ^Date ts last-seen))))
-             (sort-by :published-at))
-      ;; Log each item title and link for visibility during processing
-      _ (doseq [{:keys [title link]} items]
-        (println (formatter/colorize :gray (str "  • " title " — " link))))
+                   (sort-by :published-at))
+        ;; Log each item title and link for visibility during processing
+        _ (doseq [{:keys [title link]} items]
+            (println (formatter/colorize :gray (str "  • " title " — " link))))
         alerts (mapcat #(matcher/match-item rules %) items)]
     {:feed feed
      :items items

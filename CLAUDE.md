@@ -95,6 +95,11 @@ The application follows a pipeline architecture with clear separation of concern
    - Uses Rome Tools library for feed parsing
    - Takes Feed maps (`:feed-id`, `:url`) as input
    - Normalizes feed entries into a common map structure with `:feed-id`, `:item-id`, `:title`, `:link`, `:published-at`, `:content`, `:categories`
+   - **Error Handling**: Gracefully handles HTTP errors (429 rate limiting, 404, 500, etc.)
+     - Logs errors to stderr with specific messages
+     - Returns empty list instead of crashing
+     - Allows processing to continue for other feeds
+     - See `test/alert_scout/fetcher_test.clj` for error scenarios
 
 2. **Matcher** (`alert-scout.matcher`) - Rule matching engine
    - Implements boolean search logic with `must`, `should`, `must-not`, and `min-should-match` fields
