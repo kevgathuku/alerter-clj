@@ -98,3 +98,17 @@
                   (throw (ex-info "Unknown format" {:format format})))]
     (spit path content)
     (println (formatter/colorize :green (str "✓ Saved " (count alerts) " alerts to " path)))))
+
+(defn save-alerts-individual!
+  "Save all alerts grouped by rule-id in a single EDN file per rule per day.
+   Folder structure: base-dir/{rule-id}/YYYY-MM-DD/{timestamp}.edn"
+  [alerts base-dir]
+  (let [now (java.time.LocalDateTime/now)
+        date-str (.format now (java.time.format.DateTimeFormatter/ofPattern "yyyy-MM-dd"))
+        timestamp-str (.format now (java.time.format.DateTimeFormatter/ofPattern "HHmmss"))
+        by-rule (group-by :rule-id alerts)]
+    (doseq [[rule-id rule-alerts] by-rule]
+      (let [path (str base-dir "/" rule-id "/" date-str "/" timestamp-str ".edn")]
+        (io/make-parents path)
+        (spit path (pr-str (vec rule-alerts)))
+        (println (formatter/colorize :green (str "✓ Saved " (count rule-alerts) " alerts for " rule-id " to " path)))))))
