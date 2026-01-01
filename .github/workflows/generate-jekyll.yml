@@ -1,0 +1,76 @@
+name: Generate Jekyll Posts
+
+on:
+  # Run daily at 3am UTC to consolidate previous day's alerts
+  schedule:
+    - cron: "0 3 * * *" # Daily at 3am UTC
+
+  # Allow manual trigger with optional specific date
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Date to generate post for (YYYY-MM-DD, defaults to yesterday)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate-jekyll:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@13.4
+        with:
+          lein: latest
+
+      - name: Cache Leiningen dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2
+            ~/.lein
+          key: ${{ runner.os }}-lein-${{ hashFiles('project.clj') }}
+          restore-keys: |
+            ${{ runner.os }}-lein-
+
+      # Download all alert artifacts from the alerts workflow
+      - name: Download alert artifacts
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: alerts.yml
+          name: alerts-*
+          path: content/
+          search_artifacts: true
+
+      - name: Generate Jekyll post
+        run: |
+          # Use provided date or default to yesterday
+          DATE="${{ github.event.inputs.date }}"
+          if [ -z "$DATE" ]; then
+            # Get yesterday's date
+            DATE=$(date -d "yesterday" '+%Y-%m-%d')
+          fi
+          echo "Generating Jekyll post for $DATE"
+          echo "POST_DATE=$DATE" >> $GITHUB_ENV
+          lein generate-jekyll $DATE
+
+      - name: Commit and push Jekyll post
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "docs: Add alert report for ${{ env.POST_DATE }}"
+          file_pattern: "blog/_posts/*.markdown"
+          branch: gh-pages
