@@ -5,29 +5,34 @@
   :must-not ["test"]
   :min-should-match 1}
 
-{:id "rails-deploy"
+ {:id "rails-deploy"
   :user-id "kevin"
   :must ["rails"]
   :should ["kamal" "docker" "ruby" "deploy"]
-  :must-not ["test"]
   :min-should-match 1}
 
-{:id "js-rescript"
+ {:id "rescript"
   :user-id "kevin"
-  :must ["javascript"]
-  :should ["url" "rescript" ]
+  :must ["rescript"]
+  :should ["javascript"]
   :min-should-match 1}
 
-{:id "rails-db"
+ {:id "rails-db"
   :user-id "kevin"
   :must ["rails"]
   :should ["sql" "activerecord" "sqlite" "query" "column"]
   :must-not ["test"]
   :min-should-match 1}
 
+ {:id "rails-testing"
+  :user-id "kevin"
+  :must ["rails"]
+  :should ["rspec" "minitest" "test" "capybara"]
+  :min-should-match 1}
+
  {:id "rule-ai"
-  :user-id "admin"
-  :must ["ai"]
-  :should ["llm"]
-  :must-not ["crypto"]}]
+  :user-id "kevin"
+  :must []
+  :should ["llm" "gpt" "claude"]
+  :min-should-match 1}]
 

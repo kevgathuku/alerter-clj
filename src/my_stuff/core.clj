@@ -20,7 +20,7 @@
       (edn/read r)))
 
   (println (+ 1 2 3))
-  (map (comp inc) [1 2 3])
+  (map (comp (partial * 4) inc) [1 2 3])
 
   (->> xs (filter even?) (map inc))
   (->> [1 2 3] (filter even?) (map inc))

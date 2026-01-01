@@ -1,7 +1,8 @@
 (ns alert-scout.storage
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [alert-scout.schemas :as schemas]))
+            [alert-scout.schemas :as schemas]
+            [alert-scout.formatter :as formatter]))
 
 (defn load-edn [path]
   (with-open [r (java.io.PushbackReader. (io/reader path))]
@@ -26,19 +27,6 @@
   (save-checkpoints! path))
 
 ;; --- Configuration loading with validation ---
-
-(defn load-users
-  "Load users from an EDN file. Returns a vector of user maps.
-   Validates users against schema and throws on invalid data."
-  [path]
-  (let [users (or (load-edn path) [])]
-    (try
-      (schemas/validate-users users)
-      (catch Exception e
-        (throw (ex-info (str "Invalid users in " path)
-                        {:path path
-                         :errors (:errors (ex-data e))}
-                        e))))))
 
 (defn load-rules
   "Load rules from an EDN file. Returns a vector of rule maps.
@@ -97,3 +85,15 @@
   [path feed-id]
   (let [feeds (load-feeds path)]
     (first (filter #(= (:feed-id %) feed-id) feeds))))
+
+;; --- Alert export ---
+
+(defn save-alerts!
+  "Save alerts to a file in the specified format (:markdown or :edn)."
+  [alerts path format]
+  (let [content (case format
+                  :markdown (formatter/alerts->markdown alerts)
+                  :edn (formatter/alerts->edn alerts)
+                  (throw (ex-info "Unknown format" {:format format})))]
+    (spit path content)
+    (println (formatter/colorize :green (str "✓ Saved " (count alerts) " alerts to " path)))))

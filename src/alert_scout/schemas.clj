@@ -39,12 +39,19 @@
    [:content {:optional true} [:maybe :string]]
    [:categories {:optional true} [:vector :string]]])
 
+(def Excerpt
+  "Schema for a text excerpt showing matched content with context."
+  [:map
+   [:text [:string {:min 1}]]
+   [:matched-terms [:vector {:min 1} [:string {:min 1}]]]
+   [:source [:enum :title :content]]])
+
 (def Alert
   "Schema for an alert."
   [:map
-   [:user-id [:string {:min 1}]]
    [:rule-id [:string {:min 1}]]
-   [:item FeedItem]])
+   [:item FeedItem]
+   [:excerpts {:optional true} [:vector {:max 3} Excerpt]]])
 
 (def ProcessFeedResult
   "Schema for the result of processing a single feed."

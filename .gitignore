@@ -34,4 +34,16 @@ pom.xml.asc
 
 .clj-kondo/
 .lsp/
+.rebel_readline_history
 
+# Test artifacts
+test-resources/
+
+# Universal patterns
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+*.log
+.env
+.env.*

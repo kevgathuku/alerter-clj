@@ -259,14 +259,32 @@ This project is designed for REPL-driven development:
 - To reload configuration changes, use `:reload-all` flag when requiring namespaces
 - `run-once` returns structured data `{:alerts [...] :items-processed n}` for inspection
 
+### Bug Fixing Workflow
+
+When fixing bugs, follow a strict Test-Driven Development (TDD) approach:
+
+1. **Reproduce the bug** - Verify it exists and understand the trigger
+2. **Write a failing test** - Create a test that captures the bug
+3. **Verify the test fails** - Ensure the test actually catches the bug
+4. **Fix the bug** - Implement the minimal fix
+5. **Verify the test passes** - Ensure the fix works
+6. **Run full test suite** - Ensure no regressions
+7. **Document the bug** - Add comments explaining the fix
+
+**Critical:** Always verify the test fails before fixing. If the test passes when it should fail, it doesn't actually catch the bug.
+
+See `doc/bug-fixing-workflow.md` for the complete workflow, examples, and best practices.
+
 ## Project Structure
 
 ```
 src/
   alert-scout/          # Main application logic
-    core.clj           # Orchestration, formatting, exports
+    core.clj           # Orchestration (run-once, process-feed)
+    excerpts.clj       # Core excerpt extraction logic
     fetcher.clj        # RSS/Atom feed fetching
-    matcher.clj        # Rule matching engine
+    formatter.clj      # Output formatting (terminal, markdown, EDN)
+    matcher.clj        # Rule matching engine with excerpt generation
     storage.clj        # Data persistence with validation
     schemas.clj        # Malli schemas for domain objects
   my-stuff/            # Legacy/scratch namespace
@@ -280,4 +298,34 @@ data/                  # Configuration and state (EDN files)
 
 doc/                   # Documentation
   malli-examples.md   # Comprehensive Malli usage examples
+  bug-fixing-workflow.md  # TDD workflow for fixing bugs
 ```
+
+### Namespace Organization
+
+**formatter.clj** - All output formatting (terminal, markdown, EDN):
+- Terminal: ANSI color codes for matched terms
+- Markdown: Bold formatting for exports
+- EDN: Structured data serialization
+- Pure functions: formatting is data transformation
+
+**storage.clj** - Data persistence layer:
+- EDN file I/O for configuration (feeds, rules, users, checkpoints)
+- Alert export via `save-alerts!` (uses formatter namespace)
+- Malli schema validation at boundaries
+- State management for checkpoints (atom + file sync)
+
+**excerpts.clj** - Core excerpt extraction:
+- Text position finding with case-insensitive matching
+- Word boundary detection for clean truncation
+- Excerpt consolidation when matches are close together
+- Pure functions following functional purity principle
+
+**Note**: `save-alerts!` lives in storage.clj (not core.clj) because storage owns all file persistence operations. Core.clj focuses on orchestration only.
+
+## Active Technologies
+- Clojure 1.11+ (existing project language) (001-content-excerpts)
+- N/A (in-memory data transformations, no persistence for excerpts) (001-content-excerpts)
+
+## Recent Changes
+- 001-content-excerpts: Added Clojure 1.11+ (existing project language)

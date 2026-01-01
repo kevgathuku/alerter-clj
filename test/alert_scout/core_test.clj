@@ -1,7 +1,6 @@
 (ns alert-scout.core-test
   (:require [clojure.test :refer :all]
             [alert-scout.core :as core]
-            [alert-scout.matcher :as matcher]
             [alert-scout.storage :as storage])
   (:import (java.util Date Calendar)))
 
@@ -11,79 +10,50 @@
     (.add cal Calendar/DATE (- n))
     (.getTime cal)))
 
-(deftest test-colorize
-  (testing "ANSI color codes are applied"
-    (let [result (core/colorize :green "test")]
-      (is (.contains result "test"))
-      (is (.contains result "\u001b[32m"))   ;; Green code
-      (is (.contains result "\u001b[0m")))))  ;; Reset code
-
-(deftest test-format-alert
-  (testing "Alert formatting includes all key information"
-    (let [alert {:user-id "kevin"
-                 :rule-id "rails-api"
-                 :item {:feed-id "hn"
-                        :title "Building Rails API"
-                        :link "https://example.com/article"
-                        :published-at (Date.)}}
-          formatted (core/format-alert alert)]
-      (is (.contains formatted "kevin"))
-      (is (.contains formatted "rails-api"))
-      (is (.contains formatted "hn"))
-      (is (.contains formatted "Building Rails API"))
-      (is (.contains formatted "https://example.com/article")))))
-
-(deftest test-alerts-to-markdown
-  (testing "Markdown export contains required elements"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
-                   :item {:feed-id "hn"
-                          :title "Test Article"
-                          :link "https://example.com/test"
-                          :published-at (Date.)}}]
-          markdown (core/alerts->markdown alerts)]
-      (is (.contains markdown "# Alert Scout Report"))
-      (is (.contains markdown "Total alerts: 1"))
-      (is (.contains markdown "## Test Article"))
-      (is (.contains markdown "**Feed**: hn"))
-      (is (.contains markdown "**Rule**: rails-api"))
-      (is (.contains markdown "https://example.com/test")))))
-
-(deftest test-alerts-to-json
-  (testing "EDN export is valid and contains data"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
-                   :item {:feed-id "hn"
-                          :title "Test Article"
-                          :link "https://example.com/test"
-                          :published-at (Date.)}}]
-          edn-str (core/alerts->json alerts)
-          parsed (read-string edn-str)]
-      (is (vector? parsed))
-      (is (= 1 (count parsed)))
-      (is (= "kevin" (:user-id (first parsed))))
-      (is (= "rails-api" (:rule-id (first parsed))))
-      (is (= "hn" (:feed-id (first parsed)))))))
-
-(deftest test-format-summary
-  (testing "Summary with alerts"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rule1"
+(deftest test-alerts-summary
+  (testing "Summary with alerts (no color)"
+    (let [alerts [{:rule-id "rule1"
                    :item {:feed-id "hn" :title "Test 1"}}
-                  {:user-id "kevin"
-                   :rule-id "rule2"
+                  {:rule-id "rule2"
                    :item {:feed-id "blog" :title "Test 2"}}
-                  {:user-id "admin"
-                   :rule-id "rule3"
+                  {:rule-id "rule1"
                    :item {:feed-id "hn" :title "Test 3"}}]
-          summary (core/format-summary alerts)]
+          summary (core/alerts-summary alerts false)]
       (is (.contains summary "Total alerts: 3"))
-      (is (.contains summary "kevin"))
-      (is (.contains summary "admin"))))
+      (is (.contains summary "rule1"))
+      (is (.contains summary "rule2"))
+      ;; Verify no ANSI color codes are present
+      (is (not (.contains summary "\u001b[")))))
 
-  (testing "Summary with no alerts"
-    (let [summary (core/format-summary [])]
-      (is (.contains summary "No new alerts")))))
+  (testing "Summary with alerts (with color)"
+    (let [alerts [{:rule-id "rails-api"
+                   :item {:feed-id "hn" :title "Test 1"}}]
+          summary (core/alerts-summary alerts true)]
+      (is (.contains summary "Total alerts: 1"))
+      (is (.contains summary "rails-api"))
+      ;; Verify ANSI color codes are present
+      (is (.contains summary "\u001b["))))
+
+  (testing "Summary with no alerts (no color)"
+    (let [summary (core/alerts-summary [] false)]
+      (is (.contains summary "No new alerts"))
+      ;; Verify no ANSI color codes are present
+      (is (not (.contains summary "\u001b[")))))
+
+  (testing "Summary with no alerts (with color)"
+    (let [summary (core/alerts-summary [] true)]
+      (is (.contains summary "No new alerts"))
+      ;; Verify ANSI color codes are present
+      (is (.contains summary "\u001b["))))
+
+  (testing "Summary defaults to no color when arity-1 called"
+    (let [alerts [{:rule-id "test-rule"
+                   :item {:feed-id "blog" :title "Test"}}]
+          summary (core/alerts-summary alerts)]
+      (is (.contains summary "Total alerts: 1"))
+      (is (.contains summary "test-rule"))
+      ;; Verify no ANSI color codes are present (default is no color)
+      (is (not (.contains summary "\u001b["))))))
 
 ;; Integration-style test for process-feed logic
 (deftest test-date-filtering-logic
