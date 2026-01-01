@@ -33,13 +33,13 @@
   (if (or (nil? text) (empty? matched-terms))
     text
     (reduce
-      (fn [result term]
-        (let [pattern (re-pattern (str "(?i)" (java.util.regex.Pattern/quote term)))]
-          (str/replace result pattern
-                       (fn [match]
-                         (colorize :bold (colorize :yellow match))))))
-      text
-      matched-terms)))
+     (fn [result term]
+       (let [pattern (re-pattern (str "(?i)" (java.util.regex.Pattern/quote term)))]
+         (str/replace result pattern
+                      (fn [match]
+                        (colorize :bold (colorize :yellow match))))))
+     text
+     matched-terms)))
 
 (defn highlight-terms-markdown
   "Highlight matched terms using markdown bold formatting.
@@ -53,13 +53,13 @@
   (if (or (nil? text) (empty? matched-terms))
     text
     (reduce
-      (fn [result term]
-        (let [pattern (re-pattern (str "(?i)" (java.util.regex.Pattern/quote term)))]
-          (str/replace result pattern
-                       (fn [match]
-                         (str "**" match "**")))))
-      text
-      matched-terms)))
+     (fn [result term]
+       (let [pattern (re-pattern (str "(?i)" (java.util.regex.Pattern/quote term)))]
+         (str/replace result pattern
+                      (fn [match]
+                        (str "**" match "**")))))
+     text
+     matched-terms)))
 
 ;; --- Alert Formatting ---
 
@@ -74,9 +74,9 @@
   [excerpt highlight-fn]
   (let [{:keys [text matched-terms source]} excerpt
         source-label (case source
-                      :title "[Title]"
-                      :content "[Content]"
-                      "[Unknown]")
+                       :title "[Title]"
+                       :content "[Content]"
+                       "[Unknown]")
         highlighted-text (highlight-fn text matched-terms)]
     (str "  " (colorize :gray source-label) " " highlighted-text)))
 
@@ -84,29 +84,28 @@
   "Format a single alert for terminal display with excerpts.
 
   Args:
-    alert - Alert map with :user-id, :rule-id, :item, :excerpts (optional)
+    alert - Alert map with :rule-id, :item, :excerpts (optional)
 
   Returns formatted string with ANSI colors and highlighted excerpts."
   [{:keys [user-id rule-id item excerpts]}]
   (let [{:keys [feed-id title link published-at]} item
         date-str (when published-at
-                  (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm") published-at))
+                   (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm") published-at))
 
         ;; Main alert header
         header (str "\n"
-                   (colorize :bold (colorize :green "■ MATCH"))
-                   " " (colorize :cyan (str "[" feed-id "]"))
-                   " " (colorize :yellow (str "Rule: " rule-id))
-                   " " (colorize :gray (str "User: " user-id))
-                   "\n  " (colorize :bold title)
-                   "\n  " (colorize :blue link)
-                   (when date-str (str "\n  " (colorize :gray (str "Published: " date-str)))))
+                    (colorize :bold (colorize :green "■ MATCH"))
+                    " " (colorize :cyan (str "[" feed-id "]"))
+                    " " (colorize :yellow (str "Rule: " rule-id))
+                    "\n  " (colorize :bold title)
+                    "\n  " (colorize :blue link)
+                    (when date-str (str "\n  " (colorize :gray (str "Published: " date-str)))))
 
         ;; Excerpts section (if present)
         excerpts-section (when (and excerpts (seq excerpts))
-                          (str "\n"
-                               (str/join "\n"
-                                        (map #(format-excerpt % highlight-terms-terminal) excerpts))))]
+                           (str "\n"
+                                (str/join "\n"
+                                          (map #(format-excerpt % highlight-terms-terminal) excerpts))))]
 
     (str header excerpts-section)))
 
@@ -128,7 +127,7 @@
                    (let [{:keys [rule-id item excerpts]} alert
                          {:keys [feed-id title link published-at]} item
                          date-str (when published-at
-                                   (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm") published-at))]
+                                    (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm") published-at))]
                      (str "## " title "\n\n"
                           "- **Feed**: " feed-id "\n"
                           "- **Rule**: " rule-id "\n"
@@ -137,14 +136,14 @@
                           (when (and excerpts (seq excerpts))
                             (str "\n**Matched Content:**\n"
                                  (str/join "\n"
-                                          (for [excerpt excerpts]
-                                            (let [{:keys [text matched-terms source]} excerpt
-                                                  source-label (case source
-                                                                :title "Title"
-                                                                :content "Content"
-                                                                "Unknown")
-                                                  highlighted-text (highlight-terms-markdown text matched-terms)]
-                                              (str "- [" source-label "] " highlighted-text))))
+                                           (for [excerpt excerpts]
+                                             (let [{:keys [text matched-terms source]} excerpt
+                                                   source-label (case source
+                                                                  :title "Title"
+                                                                  :content "Content"
+                                                                  "Unknown")
+                                                   highlighted-text (highlight-terms-markdown text matched-terms)]
+                                               (str "- [" source-label "] " highlighted-text))))
                                  "\n"))))))))
 
 (defn alerts->edn
