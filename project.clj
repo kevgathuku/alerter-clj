@@ -7,7 +7,7 @@
                  [com.rometools/rome "2.1.0"]
                  [clj-http "3.13.1"]
                  [metosin/malli "0.16.4"]]
-  :main ^:skip-aot my-stuff.core
+  :main ^:skip-aot alert-scout.core
   :target-path "target/%s"
   :plugins [[cider/cider-nrepl "0.58.0"] [lein-cljfmt "0.9.2"]]
   :repl-options {:init-ns alert-scout.core

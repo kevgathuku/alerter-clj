@@ -79,3 +79,9 @@
 
      {:alerts (vec all-alerts)
       :items-processed total-items})))
+
+(defn -main
+  "Main entry point for lein run."
+  [& args]
+  (run-once)
+  (shutdown-agents))
