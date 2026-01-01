@@ -85,8 +85,11 @@
 
 (defn -main
   "Main entry point for lein run.
-   Saves alerts as individual EDN files in content/{rule-id}/YYYY-MM-DD/{timestamp}.edn"
+   Saves alerts as individual EDN files in content/{rule-id}/YYYY-MM-DD/{timestamp}.edn
+   and as a Jekyll blog post in blog/_posts/YYYY-MM-DD-alert-scout-daily-report.markdown"
   [& args]
   (let [{:keys [alerts]} (run-once)]
-    (storage/save-alerts-individual! alerts "content")
+    (when (seq alerts)
+      (storage/save-alerts-individual! alerts "content")
+      (storage/save-alerts-jekyll! alerts "blog"))
     (shutdown-agents)))

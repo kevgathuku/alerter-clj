@@ -162,3 +162,93 @@
                    :published-at (str (get-in alert [:item :published-at]))
                    :excerpts (:excerpts alert)})
                 alerts)))
+
+;; --- Deduplication ---
+
+(defn deduplicate-alerts-by-url
+  "Deduplicate alerts by URL within each rule-id group.
+
+  Args:
+    alerts - Vector of alert maps
+
+  Returns vector of alerts with duplicates removed (keeps first occurrence per URL per rule-id)."
+  [alerts]
+  (let [by-rule (group-by :rule-id alerts)]
+    (vec (mapcat (fn [[_rule-id rule-alerts]]
+                   (vals (reduce (fn [acc alert]
+                                   (let [url (get-in alert [:item :link])]
+                                     (if (contains? acc url)
+                                       acc
+                                       (assoc acc url alert))))
+                                 {}
+                                 rule-alerts)))
+                 by-rule))))
+
+;; --- Jekyll Post Formatting ---
+
+(defn alerts->jekyll
+  "Convert alerts to Jekyll markdown post format with front matter.
+
+  Args:
+    alerts - Vector of alert maps
+    date - java.util.Date for the post (used in front matter and filename)
+
+  Returns map with :filename and :content for Jekyll post."
+  [alerts date]
+  (let [date-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd")
+        datetime-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm:ss Z")
+        item-time-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm")
+        date-str (.format date-formatter date)
+        datetime-str (.format datetime-formatter date)
+        alert-count (count alerts)
+
+        ;; Group alerts by rule-id for organized display
+        by-rule (group-by :rule-id alerts)
+
+        ;; Front matter
+        front-matter (str "---\n"
+                          "layout: post\n"
+                          "title: \"Alert Scout Daily Report - " date-str "\"\n"
+                          "date: " datetime-str "\n"
+                          "categories: alerts\n"
+                          "---\n\n")
+
+        ;; Summary section
+        summary (str "## Summary\n\n"
+                     "**Total Alerts:** " alert-count "\n\n"
+                     "**Rules Matched:** " (count by-rule) "\n\n"
+                     "---\n\n")
+
+        ;; Alerts grouped by rule
+        alerts-content (str/join "\n\n---\n\n"
+                                 (for [[rule-id rule-alerts] (sort-by key by-rule)]
+                                   (str "## Rule: " rule-id "\n\n"
+                                        "**Matches:** " (count rule-alerts) "\n\n"
+                                        (str/join "\n\n"
+                                                  (for [alert rule-alerts]
+                                                    (let [{:keys [item excerpts]} alert
+                                                          {:keys [feed-id title link published-at]} item
+                                                          item-date-str (when published-at
+                                                                          (.format item-time-formatter published-at))]
+                                                      (str "### " title "\n\n"
+                                                           "- **Feed:** " feed-id "\n"
+                                                           "- **Link:** [" link "](" link ")\n"
+                                                           (when item-date-str
+                                                             (str "- **Published:** " item-date-str "\n"))
+                                                           (when (and excerpts (seq excerpts))
+                                                             (str "\n**Matched Content:**\n\n"
+                                                                  (str/join "\n"
+                                                                            (for [excerpt excerpts]
+                                                                              (let [{:keys [text matched-terms source]} excerpt
+                                                                                    source-label (case source
+                                                                                                   :title "Title"
+                                                                                                   :content "Content"
+                                                                                                   "Unknown")
+                                                                                    highlighted-text (highlight-terms-markdown text matched-terms)]
+                                                                                (str "- **[" source-label "]** " highlighted-text))))
+                                                                  "\n")))))))))
+
+        content (str front-matter summary alerts-content)
+        filename (str date-str "-alert-scout-daily-report.markdown")]
+    {:filename filename
+     :content content}))
