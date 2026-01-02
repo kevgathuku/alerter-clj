@@ -115,11 +115,17 @@
 (defn -main
   "Main entry point for lein run.
    Fetches feeds, matches rules, and saves alerts as individual EDN files
-   in content/{rule-id}/YYYY-MM-DD/{timestamp}.edn"
+   in content/YYYY-MM-DD/{timestamp}.edn"
   [& args]
   (let [{:keys [alerts]} (run-once)]
     (when (seq alerts)
-      (storage/save-alerts-individual! alerts "content"))
+      (let [now (java.util.Date.)
+            date-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd")
+            time-formatter (java.text.SimpleDateFormat. "HHmmss")
+            date-str (.format date-formatter now)
+            timestamp-str (.format time-formatter now)
+            path (.getPath ^java.io.File (clojure.java.io/file "content" date-str (str timestamp-str ".edn")))]
+        (storage/save-alerts! alerts path :edn)))
     (shutdown-agents)))
 
 (defn -generate-jekyll
@@ -129,7 +135,7 @@
      lein generate-jekyll              # Use today's date
      lein generate-jekyll 2026-01-01   # Use specific date
 
-   This reads all EDN alert files from content/*/{date}/*.edn,
+   This reads all EDN alert files from content/{date}/*.edn,
    deduplicates by URL per rule-id (in case alerts were saved from multiple runs),
    and generates a Jekyll markdown post in blog/_posts/{date}-alert-scout-daily-report.markdown"
   [& args]
@@ -141,16 +147,13 @@
         date (.parse date-formatter date-str)
 
         ;; Load all alerts for the specified date
-        all-alerts (vec (mapcat (fn [rule-dir]
-                                  (let [date-dir (str rule-dir "/" date-str)
-                                        date-dir-file (clojure.java.io/file date-dir)]
-                                    (when (.exists ^java.io.File date-dir-file)
-                                      (mapcat (fn [edn-file]
-                                                (when (.endsWith ^String (.getName ^java.io.File edn-file) ".edn")
-                                                  (storage/load-edn (.getPath ^java.io.File edn-file))))
-                                              (.listFiles ^java.io.File date-dir-file)))))
-                                (filter #(.isDirectory ^java.io.File %)
-                                        (.listFiles ^java.io.File (clojure.java.io/file "content")))))
+        date-dir-file (clojure.java.io/file "content" date-str)
+        all-alerts (vec (if (.exists ^java.io.File date-dir-file)
+                          (mapcat (fn [edn-file]
+                                    (when (.endsWith ^String (.getName ^java.io.File edn-file) ".edn")
+                                      (storage/load-edn (.getPath ^java.io.File edn-file))))
+                                  (.listFiles ^java.io.File date-dir-file))
+                          []))
         ;; Deduplicate in case there were multiple runs saving to the same date
         deduplicated-alerts (deduplicate-alerts-by-url all-alerts)]
 

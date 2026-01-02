@@ -146,23 +146,6 @@
                                                (str "- [" source-label "] " highlighted-text))))
                                  "\n"))))))))
 
-(defn alerts->edn
-  "Convert alerts to EDN format with excerpts.
-
-  Args:
-    alerts - Vector of alert maps
-
-  Returns EDN string representation of alerts."
-  [alerts]
-  (pr-str (mapv (fn [alert]
-                  {:rule-id (:rule-id alert)
-                   :feed-id (get-in alert [:item :feed-id])
-                   :title (get-in alert [:item :title])
-                   :link (get-in alert [:item :link])
-                   :published-at (str (get-in alert [:item :published-at]))
-                   :excerpts (:excerpts alert)})
-                alerts)))
-
 ;; --- Jekyll Post Formatting ---
 
 (defn alerts->jekyll
