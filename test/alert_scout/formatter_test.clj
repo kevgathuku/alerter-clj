@@ -100,11 +100,11 @@
                         :link "https://example.com/article"
                         :published-at (Date.)}
                  :excerpts [{:text "Building Rails API"
-                            :matched-terms ["rails" "api"]
-                            :source :title}
-                           {:text "Learn how to build a Rails API for modern..."
-                            :matched-terms ["rails" "api"]
-                            :source :content}]}
+                             :matched-terms ["rails" "api"]
+                             :source :title}
+                            {:text "Learn how to build a Rails API for modern..."
+                             :matched-terms ["rails" "api"]
+                             :source :content}]}
           formatted (formatter/format-alert alert)]
       ;; Should contain alert metadata
       (is (.contains formatted "rails-api"))
@@ -155,11 +155,11 @@
                           :link "https://example.com/test"
                           :published-at (Date.)}
                    :excerpts [{:text "Building Rails API"
-                              :matched-terms ["rails" "api"]
-                              :source :title}
-                             {:text "Learn how to build a Rails API..."
-                              :matched-terms ["rails" "api"]
-                              :source :content}]}]
+                               :matched-terms ["rails" "api"]
+                               :source :title}
+                              {:text "Learn how to build a Rails API..."
+                               :matched-terms ["rails" "api"]
+                               :source :content}]}]
           markdown (formatter/alerts->markdown alerts)]
       (is (.contains markdown "# Alert Scout Report"))
       (is (.contains markdown "## Building Rails API"))
@@ -192,8 +192,8 @@
                           :link "https://example.com/test"
                           :published-at (Date.)}
                    :excerpts [{:text "Building Rails API"
-                              :matched-terms ["rails" "api"]
-                              :source :title}]}]
+                               :matched-terms ["rails" "api"]
+                               :source :title}]}]
           edn-str (pr-str alerts)
           parsed (read-string edn-str)]
       (is (vector? parsed))

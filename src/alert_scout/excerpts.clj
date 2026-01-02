@@ -64,8 +64,8 @@
 
            ;; Safety check: if word boundaries crossed, fall back to desired positions
            [final-start final-end] (if (>= excerpt-start excerpt-end)
-                                      [desired-start desired-end]
-                                      [excerpt-start excerpt-end])
+                                     [desired-start desired-end]
+                                     [excerpt-start excerpt-end])
 
            ;; Extract text with ellipsis
            needs-start-ellipsis (pos? final-start)

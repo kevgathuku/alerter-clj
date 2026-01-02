@@ -160,16 +160,16 @@
     (if (seq deduplicated-alerts)
       (do
         (println (formatter/colorize :cyan
-                                    (str "Loaded " (count all-alerts)
-                                         " alerts for " date-str)))
+                                     (str "Loaded " (count all-alerts)
+                                          " alerts for " date-str)))
         (when (not= (count all-alerts) (count deduplicated-alerts))
           (println (formatter/colorize :gray
-                                      (str "Deduplicated " (- (count all-alerts) (count deduplicated-alerts))
-                                           " duplicate URLs"))))
+                                       (str "Deduplicated " (- (count all-alerts) (count deduplicated-alerts))
+                                            " duplicate URLs"))))
         (storage/save-alerts-jekyll! deduplicated-alerts "blog" date)
         (println (formatter/colorize :green
-                                    (str "✓ Jekyll post generated for " date-str))))
+                                     (str "✓ Jekyll post generated for " date-str))))
       (println (formatter/colorize :yellow
-                                  (str "No alerts found for " date-str))))
+                                   (str "No alerts found for " date-str))))
 
     (shutdown-agents)))

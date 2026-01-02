@@ -81,9 +81,9 @@
 (deftest test-excerpt-schema-explain
   (testing "Explain errors for invalid excerpt"
     (let [errors (schemas/explain schemas/Excerpt
-                                   {:text ""
-                                    :matched-terms []
-                                    :source :body})]
+                                  {:text ""
+                                   :matched-terms []
+                                   :source :body})]
       (is (map? errors))
       (is (contains? errors :text))
       (is (contains? errors :matched-terms))
