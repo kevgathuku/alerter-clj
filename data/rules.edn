@@ -14,7 +14,13 @@
  {:id "rescript"
   :user-id "kevin"
   :must ["rescript"]
-  :should ["javascript"]
+  :should ["javascript" "typescript"]
+  :min-should-match 1}
+
+ {:id "editor-wars"
+  :user-id "kevin"
+  :must ["editor"]
+  :should ["vim" "emacs"]
   :min-should-match 1}
 
  {:id "rails-db"
