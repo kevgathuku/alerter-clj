@@ -94,7 +94,7 @@
   (io/make-parents path)
   (let [content (case format
                   :markdown (formatter/alerts->markdown alerts)
-                  :edn (formatter/alerts->edn alerts)
+                  :edn (pr-str alerts)
                   (throw (ex-info "Unknown format" {:format format})))]
     (spit path content)
     (println (formatter/colorize :green (str "✓ Saved " (count alerts) " alerts to " path)))))

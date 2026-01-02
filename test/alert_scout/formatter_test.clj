@@ -177,12 +177,12 @@
                           :title "Test Article"
                           :link "https://example.com/test"
                           :published-at (Date.)}}]
-          edn-str (formatter/alerts->edn alerts)
+          edn-str (pr-str alerts)
           parsed (read-string edn-str)]
       (is (vector? parsed))
       (is (= 1 (count parsed)))
       (is (= "rails-api" (:rule-id (first parsed))))
-      (is (= "hn" (:feed-id (first parsed)))))))
+      (is (= "hn" (get-in (first parsed) [:item :feed-id]))))))
 
 (deftest test-alerts-to-edn-with-excerpts
   (testing "EDN export includes excerpts as structured data"
@@ -194,7 +194,7 @@
                    :excerpts [{:text "Building Rails API"
                               :matched-terms ["rails" "api"]
                               :source :title}]}]
-          edn-str (formatter/alerts->edn alerts)
+          edn-str (pr-str alerts)
           parsed (read-string edn-str)]
       (is (vector? parsed))
       (is (= 1 (count parsed)))
