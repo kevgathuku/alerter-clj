@@ -34,8 +34,9 @@
    Takes a Remus entry map and feed-id."
   [entry feed-id]
   (let [;; Extract content value from contents or description
-        content-value (or (get-in entry [:contents 0 :value])
-                          (get-in entry [:description :value]))
+        ;; :contents is a sequence, so use first instead of get-in with index
+        content-value (or (some-> entry :contents first :value)
+                          (some-> entry :description :value))
         ;; Extract URI or link for item-id
         item-id (or (:uri entry) (:link entry))]
     {:feed-id feed-id
