@@ -16,7 +16,9 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          ref: alerts-data
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -51,5 +53,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "alerts: Add alerts from ${{ github.run_id }} at ${{ env.ALERT_TIMESTAMP }}"
-          branch: alerts-data
           file_pattern: "data/ content/"
