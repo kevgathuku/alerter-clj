@@ -1,43 +1,36 @@
 [{:id "rails"
-  :user-id "kevin"
   :must ["rails"]
   :should ["activerecord" "ruby" "api" "code"]
   :must-not ["test"]
   :min-should-match 1}
 
  {:id "rails-deploy"
-  :user-id "kevin"
   :must ["rails"]
   :should ["kamal" "docker" "ruby" "deploy"]
   :min-should-match 1}
 
  {:id "rescript"
-  :user-id "kevin"
   :must ["rescript"]
   :should ["javascript" "typescript"]
   :min-should-match 1}
 
  {:id "editor-wars"
-  :user-id "kevin"
   :must ["editor"]
   :should ["vim" "emacs"]
   :min-should-match 1}
 
  {:id "rails-db"
-  :user-id "kevin"
   :must ["rails"]
   :should ["sql" "activerecord" "sqlite" "query" "column"]
   :must-not ["test"]
   :min-should-match 1}
 
  {:id "rails-testing"
-  :user-id "kevin"
   :must ["rails"]
   :should ["rspec" "minitest" "test" "capybara"]
   :min-should-match 1}
 
  {:id "rule-ai"
-  :user-id "kevin"
   :must []
   :should ["llm" "gpt" "claude"]
   :min-should-match 1}]

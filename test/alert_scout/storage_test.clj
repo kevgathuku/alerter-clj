@@ -86,13 +86,13 @@
 
 (deftest test-load-rules-validation
   (testing "Valid rules load successfully"
-    (spit test-rules-path "[{:id \"test-rule\" :user-id \"alice\" :must [\"rails\"]}]")
+    (spit test-rules-path "[{:id \"test-rule\" :must [\"rails\"]}]")
     (let [rules (storage/load-rules! test-rules-path)]
       (is (= 1 (count rules)))
       (is (= "test-rule" (:id (first rules))))))
 
   (testing "Invalid rule throws validation error"
-    (spit test-rules-path "[{:id \"\" :user-id \"alice\"}]")
+    (spit test-rules-path "[{:id \"\"}]")
     (is (thrown-with-msg? Exception #"Invalid rules"
                           (storage/load-rules! test-rules-path)))))
 
@@ -125,8 +125,7 @@
 
 (deftest test-save-alerts-markdown
   (testing "Save alerts to markdown format"
-    (let [alerts [{:user-id "kevin"
-                   :rule-id "rails-api"
+    (let [alerts [{:rule-id "rails-api"
                    :item {:feed-id "hn"
                           :title "Building Rails API"
                           :link "https://example.com/test"
@@ -218,8 +217,7 @@
 
 (deftest test-save-alerts-invalid-format
   (testing "Invalid format throws error"
-    (let [alerts [{:user-id "alice"
-                   :rule-id "test"
+    (let [alerts [{:rule-id "test"
                    :item {:feed-id "hn" :title "Test"}}]
           temp-file "test-resources/test-alerts.txt"]
       (is (thrown-with-msg? Exception #"Unknown format"

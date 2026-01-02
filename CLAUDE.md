@@ -103,17 +103,16 @@ The application follows a pipeline architecture with clear separation of concern
 
 2. **Matcher** (`alert-scout.matcher`) - Rule matching engine
    - Implements boolean search logic with `must`, `should`, `must-not`, and `min-should-match` fields
-   - Rules are grouped by user-id for multi-user support
    - Matching is case-insensitive and searches both title and content
 
 3. **Storage** (`alert-scout.storage`) - Data persistence layer
-   - Handles EDN file I/O for users, rules, feeds, and checkpoints
+   - Handles EDN file I/O for rules, feeds, and checkpoints
    - Maintains in-memory checkpoint state using atoms
    - Provides CRUD operations for feed management
    - Validates data against schemas when loading/saving
 
 4. **Schemas** (`alert-scout.schemas`) - Data validation using Malli
-   - Defines schemas for all domain objects (Feed, Rule, User, FeedItem, Alert)
+   - Defines schemas for all domain objects (Feed, Rule, FeedItem, Alert)
    - Provides validation functions with clear error messages
    - Protects against invalid data at system boundaries
    - See `doc/malli-examples.md` for detailed examples
@@ -145,18 +144,15 @@ Checkpoint Storage (data/checkpoints.edn)
   - Updated after each successful feed processing run
 
 - **Configuration**: Loaded once on namespace initialization
-  - `users` - User definitions from `data/users.edn`
   - `rules` - Alert rules from `data/rules.edn`
   - `feeds` - Feed subscriptions from `data/feeds.edn`
-  - `rules-by-user` - Derived grouping of rules by user-id
 
 ### Data Files
 
 All configuration is stored in `data/` as EDN files:
 
 - **feeds.edn**: Vector of feed maps with `:feed-id` and `:url`
-- **rules.edn**: Vector of rule maps with `:id`, `:user-id`, `:must`, `:should`, `:must-not`, `:min-should-match`
-- **users.edn**: Vector of user maps with `:id` and `:email`
+- **rules.edn**: Vector of rule maps with `:id`, `:must`, `:should`, `:must-not`, `:min-should-match`
 - **checkpoints.edn**: Map of feed-id to last-seen Date (auto-managed)
 
 ## Important Implementation Details
@@ -298,7 +294,6 @@ src/
 data/                  # Configuration and state (EDN files)
   feeds.edn           # Feed subscriptions
   rules.edn           # Alert rules
-  users.edn           # User definitions
   checkpoints.edn     # Last-seen timestamps (auto-managed)
 
 doc/                   # Documentation
