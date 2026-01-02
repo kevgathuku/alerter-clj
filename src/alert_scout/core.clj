@@ -142,8 +142,7 @@
 
         ;; Load all alerts for the specified date
         all-alerts (vec (mapcat (fn [rule-dir]
-                                  (let [date-dir (str rule-dir "/" date-str)
-                                        date-dir-file (clojure.java.io/file date-dir)]
+                                  (let [date-dir-file (clojure.java.io/file rule-dir date-str)]
                                     (when (.exists ^java.io.File date-dir-file)
                                       (mapcat (fn [edn-file]
                                                 (when (.endsWith ^String (.getName ^java.io.File edn-file) ".edn")
