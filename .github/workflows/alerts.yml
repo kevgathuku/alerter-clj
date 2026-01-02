@@ -34,63 +34,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-lein-
 
-      - name: Restore checkpoints from previous run
-        uses: actions/cache/restore@v4
-        with:
-          path: data/checkpoints.edn
-          key: checkpoints-${{ github.run_number }}
-          restore-keys: |
-            checkpoints-
-
       # Saves alerts to content/{rule-id}/YYYY-MM-DD/*.edn
       - name: Fetch feeds and match alerts
         run: lein run
 
-      - name: Save checkpoints for next run
-        uses: actions/cache/save@v4
-        with:
-          path: data/checkpoints.edn
-          key: checkpoints-${{ github.run_number }}
-
-      - name: Store content directory path
+      - name: Generate timestamp for commit message
         run: |
-          # Save absolute path to generated content
-          echo "CONTENT_PATH=$(pwd)/content" >> $GITHUB_ENV
-
-      - name: Checkout alerts-data branch
-        uses: actions/checkout@v4
-        with:
-          ref: alerts-data
-          path: alerts-data-repo
-        continue-on-error: true
-
-      - name: Create alerts-data branch if it doesn't exist
-        if: failure()
-        run: |
-          git clone --single-branch --branch main https://github.com/${{ github.repository }} alerts-data-repo
-          cd alerts-data-repo
-          git checkout --orphan alerts-data
-          git rm -rf . 2>/dev/null || true
-          git clean -fd
-
-      - name: Copy new alerts
-        run: |
-          if [ -d "$CONTENT_PATH" ] && [ "$(ls -A $CONTENT_PATH)" ]; then
-            echo "Copying new alerts to alerts-data branch"
-            mkdir -p alerts-data-repo/content
-            cp -r $CONTENT_PATH/* alerts-data-repo/content/
-            ls -laR alerts-data-repo/content/
-          else
-            echo "No new alerts to copy"
-          fi
-          
-          # Generate timestamp for commit message
           echo "ALERT_TIMESTAMP=$(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
 
       - name: Commit and push generated alerts
         uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: "alerts: Add alerts from ${{ github.run_id }} at ${{ env.ALERT_TIMESTAMP }}"
-          repository: ./alerts-data-repo
           branch: alerts-data
           create_branch: true
+          file_pattern: 'content/*'
