@@ -1,5 +1,3 @@
 [{:feed-id "hn" :url "https://news.ycombinator.com/rss"}
  {:feed-id "hn-frontpage" :url "https://hnrss.org/frontpage"}
- {:feed-id "hashnode-clojure" :url "https://hashnode.com/n/clojure/rss"}
- {:feed-id "hashnode-ruby" :url "https://hashnode.com/n/clojure/ruby"}
  {:feed-id "simonh-software" :url "https://simonh.uk/feeds/software.atom.xml"}]
