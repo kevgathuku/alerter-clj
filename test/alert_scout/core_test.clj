@@ -65,15 +65,13 @@
                       :title "Old Article"
                       :link "https://example.com/old"
                       :published-at (days-ago 10)
-                      :content nil
-                      :categories []}
+                      :content nil}
             new-item {:feed-id "test"
                       :item-id "new"
                       :title "New Article"
                       :link "https://example.com/new"
                       :published-at (days-ago 3)
-                      :content nil
-                      :categories []}
+                      :content nil}
             items [old-item new-item]
 
             ;; Filter logic from process-feed
@@ -95,15 +93,13 @@
                    :title "Article 1"
                    :link "https://example.com/1"
                    :published-at (days-ago 10)
-                   :content nil
-                   :categories []}
+                   :content nil}
             item2 {:feed-id "test"
                    :item-id "2"
                    :title "Article 2"
                    :link "https://example.com/2"
                    :published-at (days-ago 3)
-                   :content nil
-                   :categories []}
+                   :content nil}
             items [item1 item2]
 
             last-seen (storage/last-seen "test")

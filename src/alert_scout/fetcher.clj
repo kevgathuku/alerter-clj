@@ -48,8 +48,7 @@
               :link (:link entry)
               :published-at (or (:published-date entry)
                                 (:updated-date entry))
-              :content content-value
-              :categories (or (:categories entry) [])}]
+              :content content-value}]
     ;; Validate at the boundary (external data → domain object)
     (schemas/validate schemas/FeedItem item)))
 

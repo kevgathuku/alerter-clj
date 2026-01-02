@@ -28,9 +28,7 @@
    [:item-id [:string {:min 1}]]
    [:title [:string {:min 1}]]
    [:link [:string {:min 1}]]
-   [:published-at [:maybe inst?]]
-   [:content {:optional true} [:maybe :string]]
-   [:categories {:optional true} [:vector :string]]])
+   [:published-at [:maybe inst?]]])
 
 (def Excerpt
   "Schema for a text excerpt showing matched content with context."
