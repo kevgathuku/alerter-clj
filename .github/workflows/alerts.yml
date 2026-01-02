@@ -2,7 +2,7 @@ name: Feed alerts
 
 on:
   schedule:
-    - cron: "10 * * * *" # Every hour
+    - cron: "10 */3 * * *" # Every 3 hours
   workflow_dispatch: # Allow manual run
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-lein-
 
-      # Saves alerts to content/{rule-id}/YYYY-MM-DD/*.edn
+      # Saves alerts to content/YYYY-MM-DD/{timestamp}.edn
       - name: Fetch feeds and match alerts
         run: lein run
 
