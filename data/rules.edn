@@ -25,6 +25,21 @@
   :must-not ["test"]
   :min-should-match 1}
 
+ {:id "clojure"
+  :must ["clojure"]
+  :should ["repl" "command" "jvm" "java" "typed" "functional"]
+  :min-should-match 1}
+
+ {:id "clojure-db"
+  :must ["clojure"]
+  :should ["sql" "datomic" "xtdb" "typed" "functional" "state"]
+  :min-should-match 1}
+
+ {:id "clojurescript"
+  :must ["clojurescript"]
+  :should ["cljs" "repl" "javascript" "reagent" "render" "node" "react"]
+  :min-should-match 1}
+
  {:id "rails-testing"
   :must ["rails"]
   :should ["rspec" "minitest" "test" "capybara"]
@@ -32,6 +47,6 @@
 
  {:id "rule-ai"
   :must []
-  :should ["llm" "gpt" "claude"]
+  :should ["llm" "gpt" "claude" "machine learning"]
   :min-should-match 1}]
 

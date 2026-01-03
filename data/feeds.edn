@@ -1,3 +1,4 @@
 [{:feed-id "hn" :url "https://news.ycombinator.com/rss"}
  {:feed-id "hn-frontpage" :url "https://hnrss.org/frontpage"}
+ {:feed-id "planet-clojure" :url "https://planet.clojure.in/atom.xml"}
  {:feed-id "simonh-software" :url "https://simonh.uk/feeds/software.atom.xml"}]
