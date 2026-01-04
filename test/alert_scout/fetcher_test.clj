@@ -36,13 +36,13 @@
       (is (nil? status)))))
 
 (deftest test-fetch-items-error-handling
-  (testing "fetch-items returns empty list when fetch-feed! returns nil"
+  (testing "fetch-items! returns empty list when fetch-feed! returns nil"
     ;; Mock fetch-feed! to return nil (simulating error)
     (with-redefs [fetcher/fetch-feed! (constantly nil)]
       (let [feed {:feed-id "test-feed"
                   :url "https://example.com/rss.xml"}]
         ;; Should return empty list, not throw
-        (is (= [] (fetcher/fetch-items feed)))))))
+        (is (= [] (fetcher/fetch-items! feed)))))))
 
 (deftest test-fetch-feed!-error-handling
   (testing "fetch-feed! returns nil when Remus throws HTTP 429"

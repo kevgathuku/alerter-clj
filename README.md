@@ -11,7 +11,6 @@ Never miss important content again - let Alert Scout filter the noise and surfac
 
 - 🎯 **Smart Rule Matching** - Define complex boolean rules with `must`, `should`, `must-not`, and `min-should-match` logic
 - 📡 **Multi-Feed Support** - Monitor unlimited RSS/Atom feeds simultaneously
-- 👥 **Multi-User** - Different alert rules for different users
 - ✅ **Schema Validation** - Runtime data validation with [Malli](https://github.com/metosin/malli) ensures data integrity
 - 🎨 **Beautiful Output** - Color-coded terminal alerts with formatted summaries
 - 📤 **Export Options** - Save alerts as Markdown or EDN for further processing
@@ -23,7 +22,7 @@ Never miss important content again - let Alert Scout filter the noise and surfac
 
 ```bash
 # Clone and setup
-git clone https://github.com/kevgathuku/alerter-clj.git
+git clone https://github.com/kevgathuku/alert-scout.git
 cd alerter-clj
 lein deps
 
@@ -67,7 +66,7 @@ lein deps
 lein uberjar
 
 # Run the JAR
-java -jar target/uberjar/my-stuff-0.1.0-SNAPSHOT-standalone.jar
+java -jar target/uberjar/alert-scout-0.1.0-SNAPSHOT-standalone.jar
 ```
 
 ## Configuration
@@ -89,26 +88,15 @@ Alert Scout uses EDN files in the `data/` directory for configuration.
 
 ```clojure
 [{:id "rails-deployment"
-  :user-id "alice"
   :must ["rails"]                          ;; Must contain "rails"
   :should ["docker" "kamal" "deploy"]      ;; Should have at least 1 of these
   :must-not ["test"]                       ;; Must NOT contain "test"
   :min-should-match 1}
 
  {:id "ai-news"
-  :user-id "bob"
   :must ["ai"]
   :should ["llm" "gpt" "claude"]
   :min-should-match 1}]
-```
-
-### Configure Users
-
-**`data/users.edn`**
-
-```clojure
-[{:id "alice" :email "alice@example.com"}
- {:id "bob" :email "bob@example.com"}]
 ```
 
 ## Usage
@@ -127,19 +115,18 @@ Alert Scout uses EDN files in the `data/` directory for configuration.
 ```
 → Checking feed: hn (https://news.ycombinator.com/rss)
 
-■ MATCH [hn] Rule: rails-deployment User: alice
+■ MATCH [hn] Rule: rails-deployment
   Deploying Rails with Docker and Kamal
   https://news.ycombinator.com/item?id=123456
   Published: 2025-12-29 15:30
 
 ═══ SUMMARY ═══
 Total alerts: 3
-  alice: 2 alerts
-    - hn: 2
-  bob: 1 alerts
-    - blog: 1
+  rails-deployment: 2 alerts
+  ai-news: 1 alerts
 
 Processed 15 new items across 2 feeds
+✓ Saved 3 alerts to content/2025-12-29/153045.edn
 ```
 
 ### Advanced Usage
@@ -176,7 +163,7 @@ Processed 15 new items across 2 feeds
 (storage/remove-feed! "data/feeds.edn" "lobsters")
 
 ;; Get a specific feed
-(storage/get-feed "data/feeds.edn" "hn")
+(storage/get-feed! "data/feeds.edn" "hn")
 ```
 
 #### Schema Validation
@@ -234,9 +221,21 @@ lein test alert-scout.matcher-test
 lein test :only alert-scout.matcher-test/test-match-rule-combined
 ```
 
-### Checking for Issues
+### Code Quality
 
 ```bash
+# Check code formatting
+lein cljfmt check
+
+# Auto-fix formatting issues
+lein cljfmt fix
+
+# Run linting with clj-kondo
+lein lint
+
+# Run all checks (format + lint + compile)
+lein check-all
+
 # Check for reflection warnings
 lein check
 
@@ -299,6 +298,7 @@ See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
 The project uses GitHub Actions for CI/CD:
 
 - ✅ Tests on JDK 21 and 25
+- ✅ Code quality checks (formatting, linting)
 - ✅ Reflection warning checks
 - ✅ Schema validation
 - ✅ Automatic uberjar builds
@@ -312,8 +312,8 @@ Contributions are welcome! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
 **Before submitting a PR:**
 
-1. Run `lein test` - all tests must pass
-2. Run `lein check` - no reflection warnings
+1. Run `lein check-all` - all code quality checks must pass
+2. Run `lein test` - all tests must pass
 3. Follow functional programming style (see CLAUDE.md)
 4. Add tests for new features
 
@@ -364,7 +364,7 @@ at <https://www.gnu.org/software/classpath/license.html>.
 Built with:
 
 - [Clojure](https://clojure.org/) - Functional programming language
-- [Rome Tools](https://rometools.github.io/rome/) - RSS/Atom feed parsing
+- [Remus](https://github.com/jpverkamp/remus) - RSS/Atom feed parsing
 - [Malli](https://github.com/metosin/malli) - Data validation
 - [Leiningen](https://leiningen.org/) - Build automation
 

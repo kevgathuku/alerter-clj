@@ -87,7 +87,7 @@
     alert - Alert map with :rule-id, :item, :excerpts (optional)
 
   Returns formatted string with ANSI colors and highlighted excerpts."
-  [{:keys [user-id rule-id item excerpts]}]
+  [{:keys [rule-id item excerpts]}]
   (let [{:keys [feed-id title link published-at]} item
         date-str (when published-at
                    (.format (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm") published-at))

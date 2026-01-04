@@ -17,8 +17,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
-        with:
-          ref: alerts-data
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4

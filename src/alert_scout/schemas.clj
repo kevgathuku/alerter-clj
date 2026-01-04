@@ -16,17 +16,10 @@
   "Schema for an alert rule."
   [:map
    [:id [:string {:min 1}]]
-   [:user-id [:string {:min 1}]]
    [:must {:optional true} [:vector :string]]
    [:should {:optional true} [:vector :string]]
    [:must-not {:optional true} [:vector :string]]
    [:min-should-match {:optional true} :int]])
-
-(def User
-  "Schema for a user."
-  [:map
-   [:id [:string {:min 1}]]
-   [:email [:re #".+@.+\..+"]]])
 
 (def FeedItem
   "Schema for a normalized feed item."
@@ -35,9 +28,7 @@
    [:item-id [:string {:min 1}]]
    [:title [:string {:min 1}]]
    [:link [:string {:min 1}]]
-   [:published-at [:maybe inst?]]
-   [:content {:optional true} [:maybe :string]]
-   [:categories {:optional true} [:vector :string]]])
+   [:published-at [:maybe inst?]]])
 
 (def Excerpt
   "Schema for a text excerpt showing matched content with context."
@@ -95,11 +86,6 @@
   "Validate a collection of rules."
   [rules]
   (validate [:vector Rule] rules))
-
-(defn validate-users
-  "Validate a collection of users."
-  [users]
-  (validate [:vector User] users))
 
 (defn validate-feed-item
   "Validate a single feed item."

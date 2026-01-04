@@ -1,5 +1,6 @@
 (ns alert-scout.fetcher
-  (:require [remus :as remus]))
+  (:require [remus :as remus]
+            [alert-scout.schemas :as schemas]))
 
 (defn- extract-http-status
   "Extract HTTP status code from Remus exception message."
@@ -31,26 +32,31 @@
 
 (defn entry->item
   "Normalize feed entry to a Clojure map.
-   Takes a Remus entry map and feed-id."
+   Takes a Remus entry map and feed-id.
+   Returns a validated FeedItem."
   [entry feed-id]
   (let [;; Extract content value from contents or description
-        content-value (or (get-in entry [:contents 0 :value])
-                          (get-in entry [:description :value]))
+        ;; :contents is a sequence, so use first instead of get-in with index
+        content-value (or (some-> entry :contents first :value)
+                          (some-> entry :description :value))
         ;; Extract URI or link for item-id
-        item-id (or (:uri entry) (:link entry))]
-    {:feed-id feed-id
-     :item-id item-id
-     :title (:title entry)
-     :link (:link entry)
-     :published-at (or (:published-date entry)
-                       (:updated-date entry))
-     :content content-value
-     :categories (or (:categories entry) [])}))
+        item-id (or (:uri entry) (:link entry))
+        ;; Build the item map
+        item {:feed-id feed-id
+              :item-id item-id
+              :title (:title entry)
+              :link (:link entry)
+              :published-at (or (:published-date entry)
+                                (:updated-date entry))
+              :content content-value}]
+    ;; Validate at the boundary (external data → domain object)
+    (schemas/validate schemas/FeedItem item)))
 
-(defn fetch-items
-  "Fetch all new items for a feed, normalized.
+(defn fetch-items!
+  "Fetch all new items for a feed, normalized and validated.
    Takes a Feed map with :feed-id and :url keys.
-   Returns empty list if feed fetch fails (HTTP errors, rate limiting, etc)."
+   Returns empty list if feed fetch fails (HTTP errors, rate limiting, etc).
+   Returns validated FeedItems."
   [{:keys [feed-id url]}]
   (if-let [result (fetch-feed! url)]
     (let [entries (get-in result [:feed :entries])]

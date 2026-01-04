@@ -39,18 +39,17 @@
 (comment
   ;; Run feed processing
   (def result (core/run-once))
-  
+
   ;; Inspect results
   (:alerts result)
   (:items-processed result)
   (count (:alerts result))
-  
+
   ;; Look at first alert
   (first (:alerts result))
-  
+
   ;; Check alert excerpts
-  (->> result :alerts first :excerpts)
-  )
+  (->> result :alerts first :excerpts))
 
 ;; ═══════════════════════════════════════════════════════════
 ;; Testing individual components
@@ -59,17 +58,27 @@
 (comment
   ;; Test feed fetching
   (def feeds (storage/load-feeds "data/feeds.edn"))
-  (def first-feed (first feeds))
-  (def items (fetcher/fetch-items first-feed))
-  
+  (def last-feed (last feeds))
+  (println last-feed)
+  (def feed (second feeds))
+  (def response (fetcher/fetch-feed! (:url feed)))
+  (identity response)
+  (def entries (get-in response [:feed :entries]))
+  ; (def items (fetcher/fetch-items last-feed))
+  (identity entries)
+  (def first-entry (first entries))
+  (identity first-entry)
+  (some-> first-entry :contents first :value)
+  (vec (:contents  first-entry))
+  (fetcher/entry->item (first entries) (:feed-id feed))
+
   ;; Test rule matching
   (def rules (storage/load-rules "data/rules.edn"))
   (def first-item (first items))
   (matcher/match-item rules first-item)
-  
+
   ;; Test formatting
-  (formatter/format-alert (first test-alerts))
-  )
+  (formatter/format-alert (first test-alerts)))
 
 ;; ═══════════════════════════════════════════════════════════
 ;; Quick helpers
@@ -79,8 +88,7 @@
   ;; Reload config
   (def rules (storage/load-rules "data/rules.edn"))
   (def feeds (storage/load-feeds "data/feeds.edn"))
-  
+
   ;; Quick run with fresh data
   (storage/load-checkpoints! "data/checkpoints.edn")
-  (core/run-once)
-  )
+  (core/run-once))

@@ -4,7 +4,9 @@
             [alert-scout.schemas :as schemas]
             [alert-scout.formatter :as formatter]))
 
-(defn load-edn [path]
+(defn load-edn!
+  "Load EDN file from disk. I/O operation."
+  [path]
   (with-open [r (java.io.PushbackReader. (io/reader path))]
     (edn/read {:eof nil} r)))
 
@@ -14,7 +16,7 @@
 (def checkpoints (atom {}))
 
 (defn load-checkpoints! [path]
-  (reset! checkpoints (or (load-edn path) {})))
+  (reset! checkpoints (or (load-edn! path) {})))
 
 (defn save-checkpoints! [path]
   (save-edn! path @checkpoints))
@@ -28,11 +30,12 @@
 
 ;; --- Configuration loading with validation ---
 
-(defn load-rules
+(defn load-rules!
   "Load rules from an EDN file. Returns a vector of rule maps.
-   Validates rules against schema and throws on invalid data."
+   Validates rules against schema and throws on invalid data.
+   I/O operation."
   [path]
-  (let [rules (or (load-edn path) [])]
+  (let [rules (or (load-edn! path) [])]
     (try
       (schemas/validate-rules rules)
       (catch Exception e
@@ -43,11 +46,12 @@
 
 ;; --- Feed management ---
 
-(defn load-feeds
+(defn load-feeds!
   "Load feeds from an EDN file. Returns a vector of feed maps with :feed-id and :url.
-   Validates feeds against schema and throws on invalid data."
+   Validates feeds against schema and throws on invalid data.
+   I/O operation."
   [path]
-  (let [feeds (or (load-edn path) [])]
+  (let [feeds (or (load-edn! path) [])]
     (try
       (schemas/validate-feeds feeds)
       (catch Exception e
@@ -66,7 +70,7 @@
   "Add a new feed to the feeds file. Returns the updated feeds vector.
    Validates the new feed before adding."
   [path feed-id url]
-  (let [feeds (load-feeds path)
+  (let [feeds (load-feeds! path)
         new-feed (schemas/validate schemas/Feed {:feed-id feed-id :url url})
         updated-feeds (conj feeds new-feed)]
     (save-feeds! path updated-feeds)
@@ -75,15 +79,15 @@
 (defn remove-feed!
   "Remove a feed by feed-id from the feeds file. Returns the updated feeds vector."
   [path feed-id]
-  (let [feeds (load-feeds path)
+  (let [feeds (load-feeds! path)
         updated-feeds (vec (remove #(= (:feed-id %) feed-id) feeds))]
     (save-feeds! path updated-feeds)
     updated-feeds))
 
-(defn get-feed
-  "Get a specific feed by feed-id."
+(defn get-feed!
+  "Get a specific feed by feed-id. I/O operation."
   [path feed-id]
-  (let [feeds (load-feeds path)]
+  (let [feeds (load-feeds! path)]
     (first (filter #(= (:feed-id %) feed-id) feeds))))
 
 ;; --- Alert export ---
