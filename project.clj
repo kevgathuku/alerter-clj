@@ -9,7 +9,7 @@
                  [metosin/malli "0.16.4"]]
   :main ^:skip-aot alert-scout.core
   :target-path "target/%s"
-  :plugins [[cider/cider-nrepl "0.58.0"] [lein-cljfmt "0.9.2"]]
+  :plugins [[cider/cider-nrepl "0.58.0"]]
   :repl-options {:init-ns alert-scout.core
                  :prompt (fn [ns] (str "\033[1;34m[" ns "]\033[0m=> "))
                  :init (do
