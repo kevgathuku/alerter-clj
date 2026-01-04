@@ -17,6 +17,12 @@ lein repl
 lein compile
 lein check
 
+# Code quality checks
+lein cljfmt check          # Check code formatting
+lein cljfmt fix            # Auto-fix formatting issues
+lein lint                  # Run clj-kondo linting
+lein check-all             # Run all checks: format, lint, compile
+
 # Run all tests
 lein test
 
@@ -70,6 +76,7 @@ The project uses GitHub Actions for CI/CD with two workflows:
 - Tests against multiple JDK versions (21, 25)
 - Runs all tests
 - Checks for reflection warnings
+- Runs code quality checks (formatting, linting)
 - Builds uberjar artifact
 - Uploads build artifacts (retained for 7 days)
 
@@ -84,6 +91,11 @@ Both workflows:
 - Fail if reflection warnings are detected
 - Validate data schemas during tests
 - Cache key based on `project.clj` hash
+
+**Recommended CI command:**
+```bash
+lein check-all && lein test && lein uberjar
+```
 
 ## Architecture
 

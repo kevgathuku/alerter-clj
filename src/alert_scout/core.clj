@@ -4,7 +4,8 @@
             [alert-scout.storage :as storage]
             [alert-scout.formatter :as formatter]
             [clojure.string :as str])
-  (:import (java.util Date)))
+  (:import (java.util Date))
+  (:gen-class))
 
 ;; --- Load and validate configuration on startup ---
 ;; All config is validated against schemas. If any validation fails,
