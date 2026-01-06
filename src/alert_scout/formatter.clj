@@ -109,6 +109,30 @@
 
     (str header excerpts-section)))
 
+(defn alerts-summary
+  "Create a summary of all alerts grouped by rule-id.
+
+  Args:
+    alerts - Vector of alert maps
+    colorize? - Boolean to enable/disable color output (default false)
+
+  Returns formatted summary string with alert counts per rule."
+  ([alerts] (alerts-summary alerts false))
+  ([alerts colorize?]
+   (let [colorize-fn (fn [color text] (if colorize? (colorize color text) text))]
+     (if (empty? alerts)
+       (str "\n" (colorize-fn :gray "No new alerts found."))
+       (let [by-rule (group-by :rule-id alerts)
+             total (count alerts)]
+         (str "\n" (colorize-fn :bold "═══ SUMMARY ═══")
+              "\n" (colorize-fn :green (str "Total alerts: " total))
+              "\n"
+              (str/join "\n"
+                        (for [[rule-id rule-alerts] by-rule]
+                          (str "  " (colorize-fn :cyan rule-id) ": "
+                               (colorize-fn :yellow (str (count rule-alerts) " alerts")))))
+              "\n"))))))
+
 ;; --- Export Functions ---
 
 (defn alerts->markdown

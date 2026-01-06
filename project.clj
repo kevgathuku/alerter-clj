@@ -22,12 +22,14 @@
                          (println "╚════════════════════════════════════════╝\n")
                          (defn help []
                            (println "\nCommon Commands:")
-                           (println "  (core/run-once)           - Generate alerts from feeds")
-                           (println "  (core/run-once :user-id)  - Generate alerts for specific user")
-                           (println "  (require '[...])          - Load a namespace")
-                           (println "  (doc symbol)              - Show documentation")
-                           (println "  (source symbol)           - Show source code")
-                           (println "  (dir namespace)           - List namespace contents\n")))}
+                           (println "  (require '[alert-scout.storage :as storage])")
+                           (println "  (def rules (storage/load-rules! \\\"data/rules.edn\\\"))")
+                           (println "  (def feeds (storage/load-feeds! \\\"data/feeds.edn\\\"))")
+                           (println "  (process-feeds! \\\"data/checkpoints.edn\\\" rules feeds)   - Generate alerts from feeds")
+                           (println "  (require '[...])         - Load a namespace")
+                           (println "  (doc symbol)             - Show documentation")
+                           (println "  (source symbol)          - Show source code")
+                           (println "  (dir namespace)          - List namespace contents\n")))}
   :aliases {"generate-jekyll" ["run" "-m" "alert-scout.core/-generate-jekyll"]
             "lint" ["run" "-m" "clj-kondo.main" "--lint" "src" "test"]
             "check-all" ["do" ["cljfmt" "check"] ["run" "-m" "clj-kondo.main" "--lint" "src" "test"] ["check"]]}

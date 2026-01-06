@@ -32,7 +32,7 @@
 
  {:id "clojure-db"
   :must ["clojure"]
-  :should ["sql" "datomic" "xtdb" "typed" "functional" "state"]
+  :should ["sql" "datomic" "xtdb" "state"]
   :min-should-match 1}
 
  {:id "clojurescript"

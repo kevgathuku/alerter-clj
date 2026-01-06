@@ -203,3 +203,50 @@
       (is (vector? (:excerpts (first parsed))))
       (is (= 1 (count (:excerpts (first parsed)))))
       (is (= "Building Rails API" (:text (first (:excerpts (first parsed)))))))))
+
+;; --- Alerts Summary Tests ---
+
+(deftest test-alerts-summary
+  (testing "Summary with alerts (no color)"
+    (let [alerts [{:rule-id "rule1"
+                   :item {:feed-id "hn" :title "Test 1"}}
+                  {:rule-id "rule2"
+                   :item {:feed-id "blog" :title "Test 2"}}
+                  {:rule-id "rule1"
+                   :item {:feed-id "hn" :title "Test 3"}}]
+          summary (formatter/alerts-summary alerts false)]
+      (is (.contains summary "Total alerts: 3"))
+      (is (.contains summary "rule1"))
+      (is (.contains summary "rule2"))
+      ;; Verify no ANSI color codes are present
+      (is (not (.contains summary "\u001b[")))))
+
+  (testing "Summary with alerts (with color)"
+    (let [alerts [{:rule-id "rails-api"
+                   :item {:feed-id "hn" :title "Test 1"}}]
+          summary (formatter/alerts-summary alerts true)]
+      (is (.contains summary "Total alerts: 1"))
+      (is (.contains summary "rails-api"))
+      ;; Verify ANSI color codes are present
+      (is (.contains summary "\u001b["))))
+
+  (testing "Summary with no alerts (no color)"
+    (let [summary (formatter/alerts-summary [] false)]
+      (is (.contains summary "No new alerts"))
+      ;; Verify no ANSI color codes are present
+      (is (not (.contains summary "\u001b[")))))
+
+  (testing "Summary with no alerts (with color)"
+    (let [summary (formatter/alerts-summary [] true)]
+      (is (.contains summary "No new alerts"))
+      ;; Verify ANSI color codes are present
+      (is (.contains summary "\u001b["))))
+
+  (testing "Summary defaults to no color when arity-1 called"
+    (let [alerts [{:rule-id "test-rule"
+                   :item {:feed-id "blog" :title "Test"}}]
+          summary (formatter/alerts-summary alerts)]
+      (is (.contains summary "Total alerts: 1"))
+      (is (.contains summary "test-rule"))
+      ;; Verify no ANSI color codes are present (default is no color)
+      (is (not (.contains summary "\u001b["))))))

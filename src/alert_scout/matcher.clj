@@ -10,8 +10,8 @@
        (str/join " ")
        str/lower-case))
 
-(defn contains-term? [text term]
-  (str/includes? (str/lower-case text) (str/lower-case term)))
+(defn contains-term? [content term]
+  (str/includes? (str/lower-case content) (str/lower-case term)))
 
 (defn apply-rule
   "Apply a rule to an item and return matched terms if the rule passes.
@@ -52,7 +52,7 @@
 
   Args:
     rules - Vector of rule maps
-    item - FeedItem to match against rules
+    item - FeedItem to match against
 
   Returns:
     Vector of alert maps with :rule-id, :item, and :excerpts"

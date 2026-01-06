@@ -7,12 +7,13 @@
   (:import (java.util Date))
   (:gen-class))
 
-;; --- Load and validate configuration on startup ---
-;; All config is validated against schemas. If any validation fails,
-;; the namespace will fail to load with clear error messages.
-(def rules (storage/load-rules! "data/rules.edn"))
-(def feeds (storage/load-feeds! "data/feeds.edn"))
-(storage/load-checkpoints! "data/checkpoints.edn")
+;; --- Default file paths ---
+(def ^:private default-rules-path "data/rules.edn")
+(def ^:private default-feeds-path "data/feeds.edn")
+(def ^:private default-checkpoints-path "data/checkpoints.edn")
+
+;; --- Load checkpoints on startup ---
+(storage/load-checkpoints! default-checkpoints-path)
 
 ;; --- Alert deduplication ---
 (defn deduplicate-alerts-by-url
@@ -35,36 +36,17 @@
                                  rule-alerts)))
                  by-rule))))
 
-;; --- Alert formatting (using formatter namespace) ---
-(defn emit-alert
-  "Print a formatted alert."
-  [alert]
-  (println (formatter/format-alert alert)))
-
-(defn alerts-summary
-  "Create a summary of all alerts grouped by matched alerts"
-  ([alerts] (alerts-summary alerts false))
-  ([alerts colorize?]
-   (let [colorize (fn [color text] (if colorize? (formatter/colorize color text) text))]
-     (if (empty? alerts)
-       (str "\n" (colorize :gray "No new alerts found."))
-       (let [by-feed (group-by :rule-id alerts)
-             total (count alerts)]
-         (str "\n" (colorize :bold "═══ SUMMARY ═══")
-              "\n" (colorize :green (str "Total alerts: " total))
-              "\n"
-              (str/join "\n"
-                        (for [[feed-id feed-alerts] by-feed]
-                          (str "  " (colorize :cyan feed-id) ": "
-                               (colorize :yellow (str (count feed-alerts) " alerts")))))
-              "\n"))))))
-
 ;; --- Fetch, match, emit alerts, update checkpoint ---
-(defn process-feed
-  "Process a single feed and return its results without side effects.
+(defn process-feed!
+  "Process a single feed and return its results.
+   Side effects: fetches feed from network, prints item titles to stdout.
    If feed fetch fails (HTTP errors, rate limiting, etc), returns empty results
-   but processing continues for other feeds."
-  [feed]
+   but processing continues for other feeds.
+
+   Args:
+     rules - Vector of rule maps to match against items
+     feed  - Feed map with :feed-id and :url"
+  [rules feed]
   (let [{:keys [feed-id]} feed
         last-seen (storage/last-seen feed-id)
         ;; fetch-items! returns [] on error, so we can safely continue
@@ -72,9 +54,6 @@
                    (filter #(when-let [ts (:published-at %)]
                               (or (nil? last-seen) (.after ^Date ts last-seen))))
                    (sort-by :published-at))
-        ;; Log each item title and link for visibility during processing
-        _ (doseq [{:keys [title link]} items]
-            (println (formatter/colorize :gray (str "  • " title " — " link))))
         alerts (mapcat #(matcher/match-item rules %) items)]
     {:feed feed
      :items items
@@ -82,43 +61,74 @@
      :latest-item (last items)
      :item-count (count items)}))
 
-(defn run-once
-  "Process feeds for new items and emit alerts.
-   If no feeds provided, uses the feeds loaded from data/feeds.edn.
-   Deduplicates alerts by URL per rule-id before returning.
-   Returns a map with :alerts (deduplicated alerts) and :items-processed (total items)."
-  ([]
-   (run-once feeds))
-  ([feeds]
-   ;; Process all feeds functionally (no mutation)
-   (let [results (map process-feed feeds)
+(defn- log-summary!
+  "Log processing summary to stdout.
+   Shows alert summary, total items processed, and deduplication info."
+  [deduplicated-alerts all-alerts total-items feed-count]
+  (println (formatter/alerts-summary deduplicated-alerts true))
+  (println (formatter/colorize :gray (str "Processed " total-items " new items across " feed-count " feeds")))
+  (when (not= (count all-alerts) (count deduplicated-alerts))
+    (println (formatter/colorize :gray (str "Deduplicated " (- (count all-alerts) (count deduplicated-alerts)) " duplicate URLs\n")))))
+
+(defn process-feeds!
+  "Process feeds for new items and generate alerts.
+
+   Fetches items from each feed, filters new items since last checkpoint,
+   matches them against rules, generates alerts, and updates checkpoints.
+
+   Side effects:
+   - Fetches feeds from network
+   - Prints processing status to stdout
+   - Emits formatted alerts to stdout
+   - Updates checkpoint file with latest item timestamps
+
+   Args:
+     checkpoint-path - Path to checkpoint file (e.g., 'data/checkpoints.edn')
+     rules           - Vector of rule maps to match against items
+     feeds           - Vector of feed maps to process
+
+   Returns:
+     Map with:
+       :alerts          - Vector of deduplicated alerts
+       :items-processed - Total number of new items processed"
+  [checkpoint-path rules feeds]
+  ;; Process all feeds functionally (no mutation)
+  (let [results (map (partial process-feed! rules) feeds)
          ;; Aggregate results
-         all-alerts (mapcat :alerts results)
+        all-alerts (mapcat :alerts results)
          ;; Deduplicate at the earliest point - same article from multiple feeds
-         deduplicated-alerts (deduplicate-alerts-by-url all-alerts)
-         total-items (reduce + 0 (map :item-count results))]
+        deduplicated-alerts (deduplicate-alerts-by-url all-alerts)
+        total-items (reduce + 0 (map :item-count results))]
 
-     ;; Perform side effects after data processing
-     (doseq [{:keys [alerts latest-item] {:keys [feed-id url]} :feed} results]
-       (println (formatter/colorize :gray (str "\n→ Checking feed: " feed-id " (" url ")")))
-       (run! emit-alert alerts)
-       (when latest-item
-         (storage/update-checkpoint! feed-id (:published-at latest-item) "data/checkpoints.edn")))
+     ;; Side effects - single pass over results
+    (doseq [{:keys [alerts latest-item items] {:keys [feed-id url]} :feed} results]
+      ;; Log feed and items
+      (println (formatter/colorize :gray (str "\n→ Checking feed: " feed-id " (" url ")")))
+      (doseq [{:keys [title link]} items]
+        (println (formatter/colorize :gray (str "  • " title " — " link))))
 
-     (println (alerts-summary deduplicated-alerts true))
-     (println (formatter/colorize :gray (str "Processed " total-items " new items across " (count feeds) " feeds")))
-     (when (not= (count all-alerts) (count deduplicated-alerts))
-       (println (formatter/colorize :gray (str "Deduplicated " (- (count all-alerts) (count deduplicated-alerts)) " duplicate URLs\n"))))
+      ;; Emit alerts
+      (doseq [alert alerts]
+        (println (formatter/format-alert alert)))
 
-     {:alerts (vec deduplicated-alerts)
-      :items-processed total-items})))
+      ;; Update checkpoint
+      (when latest-item
+        (storage/update-checkpoint! feed-id (:published-at latest-item) checkpoint-path)))
+
+    (log-summary! deduplicated-alerts all-alerts total-items (count feeds))
+
+     ;; Return pure data
+    {:alerts (vec deduplicated-alerts)
+     :items-processed total-items}))
 
 (defn -main
   "Main entry point for lein run.
    Fetches feeds, matches rules, and saves alerts as individual EDN files
    in content/YYYY-MM-DD/{timestamp}.edn"
   [& args]
-  (let [{:keys [alerts]} (run-once)]
+  (let [rules (storage/load-rules! default-rules-path)
+        feeds (storage/load-feeds! default-feeds-path)
+        {:keys [alerts]} (process-feeds! default-checkpoints-path rules feeds)]
     (when (seq alerts)
       (let [now (java.util.Date.)
             date-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd")
