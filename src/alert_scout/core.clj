@@ -37,11 +37,6 @@
                  by-rule))))
 
 ;; --- Alert formatting (using formatter namespace) ---
-(defn emit-alert
-  "Print a formatted alert."
-  [alert]
-  (println (formatter/format-alert alert)))
-
 (defn alerts-summary
   "Create a summary of all alerts grouped by matched alerts"
   ([alerts] (alerts-summary alerts false))
@@ -85,16 +80,6 @@
      :latest-item (last items)
      :item-count (count items)}))
 
-(defn- log-feed-processing!
-  "Log feed processing details to stdout.
-   Shows feed being checked and each new item's title and link."
-  [results]
-  (doseq [{:keys [items] {:keys [feed-id url]} :feed} results]
-    (println (formatter/colorize :gray (str "\n→ Checking feed: " feed-id " (" url ")")))
-    ;; Log each item title and link for visibility during processing
-    (doseq [{:keys [title link]} items]
-      (println (formatter/colorize :gray (str "  • " title " — " link))))))
-
 (defn- log-summary!
   "Log processing summary to stdout.
    Shows alert summary, total items processed, and deduplication info."
@@ -129,26 +114,31 @@
   ;; Process all feeds functionally (no mutation)
   (let [results (map (partial process-feed! rules) feeds)
          ;; Aggregate results
-         all-alerts (mapcat :alerts results)
+        all-alerts (mapcat :alerts results)
          ;; Deduplicate at the earliest point - same article from multiple feeds
-         deduplicated-alerts (deduplicate-alerts-by-url all-alerts)
-         total-items (reduce + 0 (map :item-count results))]
+        deduplicated-alerts (deduplicate-alerts-by-url all-alerts)
+        total-items (reduce + 0 (map :item-count results))]
 
-     ;; Side effects - clearly separated
-     (log-feed-processing! results)
+     ;; Side effects - single pass over results
+    (doseq [{:keys [alerts latest-item items] {:keys [feed-id url]} :feed} results]
+      ;; Log feed and items
+      (println (formatter/colorize :gray (str "\n→ Checking feed: " feed-id " (" url ")")))
+      (doseq [{:keys [title link]} items]
+        (println (formatter/colorize :gray (str "  • " title " — " link))))
 
-     (doseq [{:keys [alerts]} results]
-       (run! emit-alert alerts))
+      ;; Emit alerts
+      (doseq [alert alerts]
+        (println (formatter/format-alert alert)))
 
-     (doseq [{:keys [latest-item] {:keys [feed-id]} :feed} results]
-       (when latest-item
-         (storage/update-checkpoint! feed-id (:published-at latest-item) checkpoint-path)))
+      ;; Update checkpoint
+      (when latest-item
+        (storage/update-checkpoint! feed-id (:published-at latest-item) checkpoint-path)))
 
-     (log-summary! deduplicated-alerts all-alerts total-items (count feeds))
+    (log-summary! deduplicated-alerts all-alerts total-items (count feeds))
 
      ;; Return pure data
-     {:alerts (vec deduplicated-alerts)
-      :items-processed total-items}))
+    {:alerts (vec deduplicated-alerts)
+     :items-processed total-items}))
 
 (defn -main
   "Main entry point for lein run.
