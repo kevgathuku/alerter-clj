@@ -25,7 +25,7 @@
                            (println "  (require '[alert-scout.storage :as storage])")
                            (println "  (def rules (storage/load-rules! \\\"data/rules.edn\\\"))")
                            (println "  (def feeds (storage/load-feeds! \\\"data/feeds.edn\\\"))")
-                           (println "  (run-once rules feeds)   - Generate alerts from feeds")
+                           (println "  (process-feeds! \\\"data/checkpoints.edn\\\" rules feeds)   - Generate alerts from feeds")
                            (println "  (require '[...])         - Load a namespace")
                            (println "  (doc symbol)             - Show documentation")
                            (println "  (source symbol)          - Show source code")

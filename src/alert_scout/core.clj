@@ -80,15 +80,28 @@
      :latest-item (last items)
      :item-count (count items)}))
 
-(defn run-once
-  "Process feeds for new items and emit alerts.
-   Deduplicates alerts by URL per rule-id before returning.
-   Returns a map with :alerts (deduplicated alerts) and :items-processed (total items).
+(defn process-feeds!
+  "Process feeds for new items and generate alerts.
+
+   Fetches items from each feed, filters new items since last checkpoint,
+   matches them against rules, generates alerts, and updates checkpoints.
+
+   Side effects:
+   - Fetches feeds from network
+   - Prints processing status to stdout
+   - Emits formatted alerts to stdout
+   - Updates checkpoint file with latest item timestamps
 
    Args:
-     rules - Vector of rule maps to match against feed items
-     feeds - Vector of feed maps to process"
-  [rules feeds]
+     checkpoint-path - Path to checkpoint file (e.g., 'data/checkpoints.edn')
+     rules           - Vector of rule maps to match against items
+     feeds           - Vector of feed maps to process
+
+   Returns:
+     Map with:
+       :alerts          - Vector of deduplicated alerts
+       :items-processed - Total number of new items processed"
+  [checkpoint-path rules feeds]
   ;; Process all feeds functionally (no mutation)
   (let [results (map (partial process-feed! rules) feeds)
          ;; Aggregate results
@@ -105,7 +118,7 @@
          (println (formatter/colorize :gray (str "  • " title " — " link))))
        (run! emit-alert alerts)
        (when latest-item
-         (storage/update-checkpoint! feed-id (:published-at latest-item) "data/checkpoints.edn")))
+         (storage/update-checkpoint! feed-id (:published-at latest-item) checkpoint-path)))
 
      (println (alerts-summary deduplicated-alerts true))
      (println (formatter/colorize :gray (str "Processed " total-items " new items across " (count feeds) " feeds")))
@@ -122,7 +135,7 @@
   [& args]
   (let [rules (storage/load-rules! "data/rules.edn")
         feeds (storage/load-feeds! "data/feeds.edn")
-        {:keys [alerts]} (run-once rules feeds)]
+        {:keys [alerts]} (process-feeds! "data/checkpoints.edn" rules feeds)]
     (when (seq alerts)
       (let [now (java.util.Date.)
             date-formatter (java.text.SimpleDateFormat. "yyyy-MM-dd")
