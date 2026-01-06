@@ -16,21 +16,22 @@
 
 ;; --- Alert deduplication ---
 (defn deduplicate-alerts-by-url
-  "Deduplicate alerts by URL within each rule-id group.
+  "Deduplicate alerts by URL across all matches
   This removes duplicate articles that match multiple feeds but have the same URL.
 
   Args:
     alerts - Vector of alert maps
 
-  Returns vector of alerts with duplicates removed (keeps first occurrence per URL per rule-id)."
+  Returns vector of alerts with duplicates removed (keeps first occurrence per URL)"
   [alerts]
-  (vec (vals (reduce (fn [acc alert]
-                       (let [url (get-in alert [:item :link])]
-                         (if (contains? acc url)
-                           acc
-                           (assoc acc url alert))))
-                     {}
-                     alerts))))
+  (second
+   (reduce (fn [[seen acc] alert]
+             (let [url (get-in alert [:item :link])]
+               (if (contains? seen url)
+                 [seen acc]
+                 [(conj seen url) (conj acc alert)])))
+           [#{} []]
+           alerts)))
 
 ;; --- Fetch, match, emit alerts, update checkpoint ---
 (defn process-feed!
