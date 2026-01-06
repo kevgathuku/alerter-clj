@@ -72,9 +72,6 @@
                    (filter #(when-let [ts (:published-at %)]
                               (or (nil? last-seen) (.after ^Date ts last-seen))))
                    (sort-by :published-at))
-        ;; Log each item title and link for visibility during processing
-        _ (doseq [{:keys [title link]} items]
-            (println (formatter/colorize :gray (str "  • " title " — " link))))
         alerts (mapcat #(matcher/match-item rules %) items)]
     {:feed feed
      :items items
@@ -97,8 +94,11 @@
          total-items (reduce + 0 (map :item-count results))]
 
      ;; Perform side effects after data processing
-     (doseq [{:keys [alerts latest-item] {:keys [feed-id url]} :feed} results]
+     (doseq [{:keys [alerts latest-item items] {:keys [feed-id url]} :feed} results]
        (println (formatter/colorize :gray (str "\n→ Checking feed: " feed-id " (" url ")")))
+       ;; Log each item title and link for visibility during processing
+       (doseq [{:keys [title link]} items]
+         (println (formatter/colorize :gray (str "  • " title " — " link))))
        (run! emit-alert alerts)
        (when latest-item
          (storage/update-checkpoint! feed-id (:published-at latest-item) "data/checkpoints.edn")))
